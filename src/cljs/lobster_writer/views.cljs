@@ -1,7 +1,8 @@
 (ns lobster-writer.views
   (:require
     [re-frame.core :as re-frame]
-    [lobster-writer.subs :as subs]))
+    [lobster-writer.subs :as subs]
+    [react-quill :refer [ReactQuill]]))
 
 
 ;; home
@@ -22,6 +23,7 @@
 (defn about-panel []
   [:div
    [:h1 "This is the About Page."]
+   [ReactQuill]
 
    [:div
     [:a {:href "#/"}
@@ -40,5 +42,5 @@
   [panels panel-name])
 
 (defn main-panel []
-  (let [active-panel (re-frame/subscribe [::subs/active-panel])]
-    [panels @active-panel]))
+  (let [active-page (re-frame/subscribe [::subs/active-page])]
+    [panels @active-page]))

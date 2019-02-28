@@ -5,3 +5,4 @@
 out
 .idea/
 .nrepl-port
+node_modules/

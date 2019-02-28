@@ -1,7 +1,7 @@
 (defproject lobster-writer "0.1.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/clojurescript "1.10.520"]
-                 [reagent "0.7.0"]
+                 [reagent "0.8.1"]
                  [re-frame "0.10.5"]
                  [secretary "1.2.3"]
                  [garden "1.3.5"]
@@ -29,8 +29,7 @@
 
   :profiles
   {:dev
-   {:dependencies [[binaryage/devtools "0.9.10"]
-                   [day8.re-frame/re-frame-10x "0.3.3"]
+   {:dependencies [[day8.re-frame/re-frame-10x "0.3.3"]
                    [day8.re-frame/tracing "0.5.1"]
                    [figwheel-sidecar "0.5.18"]]
     :plugins [[lein-doo "0.1.8"]
@@ -47,11 +46,15 @@
                 :output-dir "resources/public/js/compiled/out"
                 :asset-path "js/compiled/out"
                 :source-map-timestamp true
-                :preloads [devtools.preload
-                           day8.re-frame-10x.preload]
                 :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
                                   "day8.re_frame.tracing.trace_enabled_QMARK_" true}
-                :external-config {:devtools/config {:features-to-install :all}}}}
+                :external-config {:devtools/config {:features-to-install :all}}
+                :install-deps true
+                :npm-deps {react-quill "1.3.3"
+                           react "16.8.1"
+                           react-dom "16.8.1"}
+                :process-shim true
+                :infer-externs true}}
 
     {:id "min"
      :source-paths ["src/cljs"]

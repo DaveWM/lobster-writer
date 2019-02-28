@@ -27,14 +27,14 @@
     <orderEntry type="library" name="Leiningen: clj-stacktrace:0.2.8" level="project" />
     <orderEntry type="library" name="Leiningen: clj-time:0.12.2" level="project" />
     <orderEntry type="library" name="Leiningen: clj-tuple:0.2.2" level="project" />
-    <orderEntry type="library" name="Leiningen: cljsjs/create-react-class:15.5.3-0" level="project" />
+    <orderEntry type="library" name="Leiningen: cljsjs/create-react-class:15.6.2-0" level="project" />
     <orderEntry type="library" name="Leiningen: cljsjs/highlight:9.6.0-0" level="project" />
     <orderEntry type="library" name="Leiningen: cljsjs/prop-types:15.6.0-0" level="project" />
-    <orderEntry type="library" name="Leiningen: cljsjs/react-dom-server:15.5.4-0" level="project" />
-    <orderEntry type="library" name="Leiningen: cljsjs/react-dom:15.5.4-0" level="project" />
+    <orderEntry type="library" name="Leiningen: cljsjs/react-dom-server:16.3.0-1" level="project" />
+    <orderEntry type="library" name="Leiningen: cljsjs/react-dom:16.3.0-1" level="project" />
     <orderEntry type="library" name="Leiningen: cljsjs/react-flip-move:2.9.17-0" level="project" />
     <orderEntry type="library" name="Leiningen: cljsjs/react-highlight:1.0.7-1" level="project" />
-    <orderEntry type="library" name="Leiningen: cljsjs/react:15.5.4-0" level="project" />
+    <orderEntry type="library" name="Leiningen: cljsjs/react:16.3.0-1" level="project" />
     <orderEntry type="library" name="Leiningen: cljsjs/vega-embed:3.0.0-rc7-0" level="project" />
     <orderEntry type="library" name="Leiningen: cljsjs/vega-lite:2.0.0-0" level="project" />
     <orderEntry type="library" name="Leiningen: cljsjs/vega-tooltip:0.4.4-0" level="project" />
@@ -153,7 +153,7 @@
     <orderEntry type="library" name="Leiningen: potemkin:0.4.5" level="project" />
     <orderEntry type="library" name="Leiningen: primitive-math:0.1.5" level="project" />
     <orderEntry type="library" name="Leiningen: re-frame:0.10.5" level="project" />
-    <orderEntry type="library" name="Leiningen: reagent:0.7.0" level="project" />
+    <orderEntry type="library" name="Leiningen: reagent:0.8.0" level="project" />
     <orderEntry type="library" name="Leiningen: rewrite-clj:0.6.0" level="project" />
     <orderEntry type="library" name="Leiningen: rewrite-cljs:0.4.4" level="project" />
     <orderEntry type="library" name="Leiningen: rhizome:0.2.9" level="project" />
