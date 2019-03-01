@@ -5,8 +5,7 @@
    [lobster-writer.events :as events]
    [lobster-writer.routes :as routes]
    [lobster-writer.views :as views]
-   [lobster-writer.config :as config]
-   ))
+   [lobster-writer.config :as config]))
 
 
 (defn dev-setup []
