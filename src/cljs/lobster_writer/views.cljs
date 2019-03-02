@@ -4,7 +4,6 @@
     [lobster-writer.subs :as subs]
     [lobster-writer.events :as events]
     [lobster-writer.components.editable-list :refer [editable-list]]
-    [cljsjs.react-quill]
     [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href]]))
 
 

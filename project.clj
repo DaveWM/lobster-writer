@@ -7,7 +7,6 @@
                  [kibu/pushy "0.3.8"]
                  [garden "1.3.5"]
                  [ns-tracker "0.3.1"]
-                 [cljsjs/react-quill "1.0.0-beta-5-0"]
                  [re-com "2.4.0"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]
@@ -18,8 +17,7 @@
   :source-paths ["src/clj" "src/cljs"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"
-                                    "test/js"
-                                    "resources/public/css"]
+                                    "test/js"]
 
   :figwheel {:css-dirs ["resources/public/css"]
              :nrepl-port 7888
