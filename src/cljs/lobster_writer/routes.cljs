@@ -1,33 +1,24 @@
 (ns lobster-writer.routes
-  (:require-macros [secretary.core :refer [defroute]])
-  (:import goog.History)
   (:require
-    [secretary.core :as secretary]
+    [bidi.bidi :as bidi]
+    [pushy.core :as pushy]
     [goog.events :as gevents]
     [goog.history.EventType :as EventType]
-    [re-frame.core :as re-frame]
-    [lobster-writer.events :as events]
-    ))
+    [re-frame.core :as re-frame]))
 
-(defn hook-browser-navigation! []
-  (doto (History.)
-    (gevents/listen
-      EventType/NAVIGATE
-      (fn [event]
-        (secretary/dispatch! (.-token event))))
-    (.setEnabled true)))
+(def app-routes
+  ["/" {"" :home
+        "about" :about
+        ["essays/" :essay-id] {"/candidate-topics" :candidate-topics}}])
 
-(defn app-routes []
-  (secretary/set-config! :prefix "#")
-  ;; --------------------
-  ;; define routes here
-  (defroute "/" []
-            (re-frame/dispatch [::events/set-active-page :home-panel])
-            )
+(defn set-page! [match]
+  (re-frame/dispatch [:lobster-writer.events/set-active-page (:handler match) (:route-params match)]))
 
-  (defroute "/about" []
-            (re-frame/dispatch [::events/set-active-page :about-panel]))
+(def history
+  (pushy/pushy set-page! (partial bidi/match-route app-routes)))
 
+(defn start-routing! []
+  (pushy/start! history))
 
-  ;; --------------------
-  (hook-browser-navigation!))
+(defn navigate-to! [url]
+  (pushy/set-token! history url))

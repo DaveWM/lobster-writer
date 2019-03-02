@@ -9,6 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/resources" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/cljs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/dev-resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/dev" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/clj" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/resources/public/js/compiled" />
@@ -18,11 +19,13 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Leiningen: aleph:0.4.4" level="project" />
     <orderEntry type="library" name="Leiningen: args4j:2.0.26" level="project" />
+    <orderEntry type="library" name="Leiningen: bidi:2.1.5" level="project" />
     <orderEntry type="library" name="Leiningen: binaryage/devtools:0.9.10" level="project" />
     <orderEntry type="library" name="Leiningen: binaryage/env-config:0.2.2" level="project" />
     <orderEntry type="library" name="Leiningen: bk/ring-gzip:0.2.1" level="project" />
     <orderEntry type="library" name="Leiningen: byte-streams:0.2.2" level="project" />
     <orderEntry type="library" name="Leiningen: cheshire:5.8.0" level="project" />
+    <orderEntry type="library" name="Leiningen: cider/piggieback:0.4.0" level="project" />
     <orderEntry type="library" name="Leiningen: clansi:1.0.0" level="project" />
     <orderEntry type="library" name="Leiningen: clj-http:3.9.1" level="project" />
     <orderEntry type="library" name="Leiningen: clj-stacktrace:0.2.8" level="project" />
@@ -47,7 +50,7 @@
     <orderEntry type="library" name="Leiningen: clout:2.1.2" level="project" />
     <orderEntry type="library" name="Leiningen: co.deps/ring-etag-middleware:0.2.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.andrewmcveigh/cljs-time:0.5.2" level="project" />
-    <orderEntry type="library" name="Leiningen: com.cemerick/clojurescript.test:0.2.3-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Leiningen: com.cemerick/clojurescript.test:0.0.4" level="project" />
     <orderEntry type="library" name="Leiningen: com.cemerick/url:0.1.1" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-clj:0.8.309" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-cljs:0.8.243" level="project" />
@@ -98,6 +101,7 @@
     <orderEntry type="library" name="Leiningen: irresponsible/tentacles:0.6.1" level="project" />
     <orderEntry type="library" name="Leiningen: javax.servlet/javax.servlet-api:3.1.0" level="project" />
     <orderEntry type="library" name="Leiningen: joda-time:2.9.4" level="project" />
+    <orderEntry type="library" name="Leiningen: kibu/pushy:0.3.8" level="project" />
     <orderEntry type="library" name="Leiningen: manifold:0.1.6" level="project" />
     <orderEntry type="library" name="Leiningen: medley:1.0.0" level="project" />
     <orderEntry type="library" name="Leiningen: metasoarous/oz:1.2.2" level="project" />
@@ -156,6 +160,7 @@
     <orderEntry type="library" name="Leiningen: pinpointer:0.1.0" level="project" />
     <orderEntry type="library" name="Leiningen: potemkin:0.4.5" level="project" />
     <orderEntry type="library" name="Leiningen: primitive-math:0.1.5" level="project" />
+    <orderEntry type="library" name="Leiningen: prismatic/schema:1.1.7" level="project" />
     <orderEntry type="library" name="Leiningen: re-com:2.4.0" level="project" />
     <orderEntry type="library" name="Leiningen: re-frame:0.10.5" level="project" />
     <orderEntry type="library" name="Leiningen: reagent:0.8.0" level="project" />
@@ -175,7 +180,6 @@
     <orderEntry type="library" name="Leiningen: ring/ring-servlet:1.6.3" level="project" />
     <orderEntry type="library" name="Leiningen: ring/ring-ssl:0.3.0" level="project" />
     <orderEntry type="library" name="Leiningen: ring:1.6.3" level="project" />
-    <orderEntry type="library" name="Leiningen: secretary:1.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: simple-lein-profile-merge:0.1.4" level="project" />
     <orderEntry type="library" name="Leiningen: slingshot:0.12.2" level="project" />
     <orderEntry type="library" name="Leiningen: specium:0.1.0" level="project" />

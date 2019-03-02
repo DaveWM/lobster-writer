@@ -2,13 +2,14 @@
   (:require
     [re-frame.core :as re-frame]
     [lobster-writer.subs :as subs]
+    [lobster-writer.events :as events]
     [cljsjs.react-quill]
     [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href]]))
 
 
 ;; home
 
-(defn home-panel []
+(defn home []
   [v-box
    :padding "25px"
    :children [[h-box
@@ -16,7 +17,7 @@
                           [gap :size "55px"]
                           [hyperlink-href
                            :label "About"
-                           :href "#/about"]]
+                           :href "/about"]]
                :align :center]
               [line]
               [gap :size "15px"]
@@ -28,13 +29,13 @@
                     (map #(-> [:li.list-group-item.list-group-item-active %])))
                ]
               [gap :size "10px"]
-              [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [:start-new-essay])]]
+              [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]]
    ])
 
 
 ;; about
 
-(defn about-panel []
+(defn about []
   [v-box
    :padding "25px"
    :children [[title :level :level1 :margin-top "2px" :margin-bottom "2px" :label "About" :underline? true]
@@ -48,12 +49,17 @@
               [p {:style {:font-weight "bold"}} "Lobster Writer is not associated with Dr. Peterson in any way."]]])
 
 
+(defn candidate-topics []
+  [p "Here!"])
+
+
 ;; main
 
 (defn panels [panel-name]
   (case panel-name
-    :home-panel [home-panel]
-    :about-panel [about-panel]
+    :home [home]
+    :about [about]
+    :candidate-topics [candidate-topics]
     [:p "Route not found!"]))
 
 

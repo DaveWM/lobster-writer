@@ -3,7 +3,8 @@
                  [org.clojure/clojurescript "1.10.520"]
                  [reagent "0.8.0"]
                  [re-frame "0.10.5"]
-                 [secretary "1.2.3"]
+                 [bidi "2.1.5"]
+                 [kibu/pushy "0.3.8"]
                  [garden "1.3.5"]
                  [ns-tracker "0.3.1"]
                  [cljsjs/react-quill "1.0.0-beta-5-0"]
@@ -22,7 +23,8 @@
 
   :figwheel {:css-dirs ["resources/public/css"]
              :nrepl-port 7888
-             :nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
+             :nrepl-middleware [cider.piggieback/wrap-cljs-repl]
+             :ring-handler figwheel-server/handler}
 
   :garden {:builds [{:id "screen"
                      :source-paths ["src/clj"]
@@ -37,7 +39,8 @@
                    [day8.re-frame/tracing "0.5.1"]
                    [figwheel-sidecar "0.5.18"]
                    [cider/piggieback "0.4.0"]]
-    :plugins [[lein-doo "0.1.8"]]}
+    :plugins [[lein-doo "0.1.8"]]
+    :source-paths ["dev"]}
    :prod {:dependencies [[day8.re-frame/tracing-stubs "0.5.1"]]}}
 
   :cljsbuild
@@ -48,7 +51,7 @@
      :compiler {:main lobster-writer.core
                 :output-to "resources/public/js/compiled/app.js"
                 :output-dir "resources/public/js/compiled/out"
-                :asset-path "js/compiled/out"
+                :asset-path "/js/compiled/out"
                 :source-map-timestamp true
                 :preloads [devtools.preload
                            day8.re-frame-10x.preload]
