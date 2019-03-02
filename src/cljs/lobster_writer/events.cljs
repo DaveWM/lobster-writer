@@ -18,10 +18,11 @@
 (rf/reg-event-db
   ::set-active-page
   [interceptors/persist-app-db]
-  (fn-traced [db [_ active-page params]]
-    (-> db
-        (assoc :active-page active-page)
-        (assoc :current-essay-id (:essay-id params)))))
+  (fn [db [_ active-page params]]
+    (cond-> db
+            true (assoc :active-page active-page)
+            true (assoc :current-essay-id (:essay-id params))
+            (:essay-id params) (assoc-in [:essays (:essay-id params) :current-step] active-page))))
 
 
 (rf/reg-event-fx
@@ -59,3 +60,28 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ topic-name]]
     (update-in db (conj (utils/current-essay-path db) :candidate-topics) disj topic-name)))
+
+
+(rf/reg-event-db
+  ::reading-list-item-added
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ reading-list-item]]
+    (if-not (s/blank? reading-list-item)
+      (update-in db (conj (utils/current-essay-path db) :reading-list) conj reading-list-item)
+      db)))
+
+
+(rf/reg-event-db
+  ::reading-list-item-removed
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ topic-name]]
+    (update-in db (conj (utils/current-essay-path db) :reading-list) disj topic-name)))
+
+
+(rf/reg-event-fx
+  ::next-step
+  [interceptors/persist-app-db]
+  (fn-traced [{:keys [db]} _]
+    (let [current-essay (get-in db (utils/current-essay-path db))]
+      {::effects/navigate {:url (str "/essays/" (:id current-essay) "/" (name (utils/next-step (:current-step current-essay))))}
+       :db db})))

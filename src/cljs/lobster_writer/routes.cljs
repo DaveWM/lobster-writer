@@ -4,12 +4,15 @@
     [pushy.core :as pushy]
     [goog.events :as gevents]
     [goog.history.EventType :as EventType]
-    [re-frame.core :as re-frame]))
+    [re-frame.core :as re-frame]
+    [lobster-writer.constants :refer [steps]]))
 
 (def app-routes
   ["/" {"" :home
         "about" :about
-        ["essays/" :essay-id] {"/candidate-topics" :candidate-topics}}])
+        ["essays/" :essay-id] (->> steps
+                                   (map (fn [s] [(str "/" (name s)) s]))
+                                   (into {}))}])
 
 (defn set-page! [match]
   (re-frame/dispatch [:lobster-writer.events/set-active-page (:handler match) (:route-params match)]))

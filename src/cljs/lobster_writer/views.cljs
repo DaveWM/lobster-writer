@@ -47,7 +47,26 @@
                    " topics that you would like to write about, or questions that you would like to answer."]
                   [editable-list {:items (:candidate-topics @*current-essay)
                                   :on-item-added #(re-frame/dispatch [::events/candidate-topic-added %])
-                                  :on-item-removed #(re-frame/dispatch [::events/candidate-topic-removed %])}]]]
+                                  :on-item-removed #(re-frame/dispatch [::events/candidate-topic-removed %])}]
+                  [gap :size "15px"]
+                  [button :disabled? (empty? (:candidate-topics @*current-essay)) :class "btn-primary" :label "Next Step"
+                   :on-click #(re-frame/dispatch [::events/next-step])]]]
+      [p "Essay not found!"])))
+
+
+(defn reading-list []
+  (let [*current-essay (re-frame/subscribe [::subs/current-essay])]
+    (if @*current-essay
+      [v-box
+       :children [[p
+                   "Great, you've thought of some potential topics to write about. Now you need to find some books or articles to read. "
+                   "You should read around " [:b "5 to 10 books per 1000 words of essay."] " List them here."]
+                  [editable-list {:items (:reading-list @*current-essay)
+                                  :on-item-added #(re-frame/dispatch [::events/reading-list-item-added %])
+                                  :on-item-removed #(re-frame/dispatch [::events/reading-list-item-removed %])}]
+                  [gap :size "15px"]
+                  [button :disabled? (empty? (:reading-list @*current-essay)) :class "btn-primary" :label "Next Step"
+                   :on-click #(re-frame/dispatch [::events/next-step])]]]
       [p "Essay not found!"])))
 
 
@@ -58,6 +77,7 @@
     :home [home]
     :about [about]
     :candidate-topics [candidate-topics]
+    :reading-list [reading-list]
     [:p "Route not found!"]))
 
 
