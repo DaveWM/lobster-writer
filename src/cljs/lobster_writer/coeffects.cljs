@@ -4,4 +4,4 @@
 (rf/reg-cofx
   ::id-generator
   (fn [coeffects _]
-    (assoc coeffects ::id-generator random-uuid)))
+    (assoc coeffects ::id-generator (comp str random-uuid))))
