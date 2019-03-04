@@ -5,7 +5,8 @@
     [lobster-writer.events :as events]
     [lobster-writer.components.editable-list :refer [editable-list]]
     [lobster-writer.utils :as utils]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text]]))
+    [lobster-writer.constants :as constants]
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split]]))
 
 
 ;; home
@@ -107,9 +108,30 @@
           [v-box
            :children [[title :level :level2 :underline? true :label (:title @*current-essay)]
                       [gap :size "12px"]
-                      [title :level :level3 :underline? true :label (utils/displayable-step-name page)]
-                      [gap :size "10px"]
-                      [page-component @*current-essay]]]
+                      [h-split
+                       :initial-split 10
+                       :splitter-size "12px"
+                       :panel-1 [v-box
+                                 :size "1"
+                                 :style {:background-color "#e1e8f0"
+                                         :padding-left "20px"
+                                         :padding-right "20px"
+                                         :border-radius "8px"}
+                                 :children [[title :level :level3 :label "Essay Steps"]
+                                            [gap :size "5px"]
+                                            [:ul.nav.nav-pills.nav-stacked
+                                             (->> constants/steps
+                                                  (map #(let [enabled (utils/step-before-or-equal? % (:highest-step @*current-essay))]
+                                                          [:li.nav-item {:class (str (when (= (:current-step @*current-essay) %)
+                                                                                         "active ")
+                                                                                       (when-not enabled
+                                                                                         "disabled "))}
+                                                             [:a {:href (when enabled (utils/step-url (:id @*current-essay) %))}
+                                                              (utils/displayable-step-name %)]])))]]]
+                       :panel-2 [v-box
+                                 :children [[title :level :level3 :underline? true :label (utils/displayable-step-name page)]
+                                            [gap :size "10px"]
+                                            [page-component @*current-essay]]]]]]
           [p "Essay not found!"]))
       [page-component])))
 

@@ -19,10 +19,11 @@
   ::set-active-page
   [interceptors/persist-app-db]
   (fn [db [_ active-page params]]
-    (cond-> db
-            true (assoc :active-page active-page)
-            true (assoc :current-essay-id (:essay-id params))
-            (:essay-id params) (assoc-in [:essays (:essay-id params) :current-step] active-page))))
+    (let [selected-essay (get-in db [:essays (:essay-id params)])]
+      (cond-> db
+              true (assoc :active-page active-page)
+              true (assoc :current-essay-id (:essay-id params))
+              selected-essay (assoc-in [:essays (:essay-id params) :current-step] active-page)))))
 
 
 (rf/reg-event-fx
@@ -34,8 +35,9 @@
                (assoc-in [:essays essay-id] {:id essay-id
                                              :title (str "New Essay " (inc (count (:essays db))))
                                              :candidate-topics #{}
-                                             :current-step :candidate-topics}))
-       ::effects/navigate {:url (str "/essays/" essay-id "/candidate-topics")}})))
+                                             :current-step :candidate-topics
+                                             :highest-step :candidate-topics}))
+       ::effects/navigate {:url (utils/step-url essay-id :candidate-topics)}})))
 
 
 (rf/reg-event-fx
@@ -43,7 +45,7 @@
   [interceptors/persist-app-db]
   (fn-traced [{:keys [db]} [_ essay-id]]
     (let [selected-essay (get-in db [:essays essay-id])]
-      {::effects/navigate {:url (str "/essays/" essay-id "/" (name (:current-step selected-essay)))}})))
+      {::effects/navigate {:url (utils/step-url essay-id (:current-step selected-essay))}})))
 
 
 (rf/reg-event-db
@@ -82,9 +84,12 @@
   ::next-step
   [interceptors/persist-app-db]
   (fn-traced [{:keys [db]} _]
-    (let [current-essay (get-in db (utils/current-essay-path db))]
-      {::effects/navigate {:url (str "/essays/" (:id current-essay) "/" (name (utils/next-step (:current-step current-essay))))}
-       :db db})))
+    (let [current-essay (get-in db (utils/current-essay-path db))
+          next-step (utils/next-step (:current-step current-essay))]
+      {::effects/navigate {:url (utils/step-url (:id current-essay) next-step)}
+       :db (if (utils/step-after? next-step (:highest-step current-essay))
+             (assoc-in db (conj (utils/current-essay-path db) :highest-step) next-step)
+             db)})))
 
 
 (rf/reg-event-db

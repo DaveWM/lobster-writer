@@ -9,6 +9,14 @@
   (let [step-idx (.indexOf constants/steps step)]
     (get constants/steps (inc step-idx))))
 
+(defn step-before-or-equal? [step1 step2]
+  (<= (.indexOf constants/steps step1)
+      (.indexOf constants/steps step2)))
+
+(defn step-after? [step1 step2]
+  (> (.indexOf constants/steps step1)
+     (.indexOf constants/steps step2)))
+
 (defn parse-int [s]
   (let [i (js/parseInt s)]
     (when (int? i)
@@ -19,3 +27,6 @@
        (re-seq #"\w+")
        (map s/capitalize)
        (s/join " ")))
+
+(defn step-url [essay-id step]
+  (str "/essays/" essay-id "/" (name step)))
