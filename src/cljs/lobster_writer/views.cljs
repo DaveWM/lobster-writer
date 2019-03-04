@@ -39,75 +39,79 @@
               [p {:style {:font-weight "bold"}} "Lobster Writer is not associated with Dr. Peterson in any way."]]])
 
 
-(defn candidate-topics []
-  (let [*current-essay (re-frame/subscribe [::subs/current-essay])]
-    (if @*current-essay
-      [v-box
-       :children [[p "This is the first step in writing your essay. List around "
-                   [:b "10"]
-                   " topics that you would like to write about, or questions that you would like to answer."]
-                  [editable-list {:items (:candidate-topics @*current-essay)
-                                  :on-item-added #(re-frame/dispatch [::events/candidate-topic-added %])
-                                  :on-item-removed #(re-frame/dispatch [::events/candidate-topic-removed %])}]
-                  [gap :size "15px"]
-                  [button :disabled? (empty? (:candidate-topics @*current-essay)) :class "btn-primary" :label "Next Step"
-                   :on-click #(re-frame/dispatch [::events/next-step])]]]
-      [p "Essay not found!"])))
+(defn candidate-topics [current-essay]
+  [v-box
+   :children [[p "This is the first step in writing your essay. List around "
+               [:b "10"]
+               " topics that you would like to write about, or questions that you would like to answer."]
+              [editable-list {:items (:candidate-topics current-essay)
+                              :on-item-added #(re-frame/dispatch [::events/candidate-topic-added %])
+                              :on-item-removed #(re-frame/dispatch [::events/candidate-topic-removed %])}]
+              [gap :size "15px"]
+              [button :disabled? (empty? (:candidate-topics current-essay)) :class "btn-primary" :label "Next Step"
+               :on-click #(re-frame/dispatch [::events/next-step])]]])
 
 
-(defn reading-list []
-  (let [*current-essay (re-frame/subscribe [::subs/current-essay])]
-    (if @*current-essay
-      [v-box
-       :children [[p
-                   "Great, you've thought of some potential topics to write about. Now you need to find some books or articles to read. "
-                   "You should read around " [:b "5 to 10 books per 1000 words of essay."] " List them here."]
-                  [editable-list {:items (:reading-list @*current-essay)
-                                  :on-item-added #(re-frame/dispatch [::events/reading-list-item-added %])
-                                  :on-item-removed #(re-frame/dispatch [::events/reading-list-item-removed %])}]
-                  [gap :size "15px"]
-                  [button
-                   :disabled? (empty? (:reading-list @*current-essay)) :class "btn-primary" :label "Next Step"
-                   :on-click #(re-frame/dispatch [::events/next-step])]]]
-      [p "Essay not found!"])))
+(defn reading-list [current-essay]
+  [v-box
+   :children [[p
+               "Great, you've thought of some potential topics to write about. Now you need to find some books or articles to read. "
+               "You should read around " [:b "5 to 10 books per 1000 words of essay."] " List them here."]
+              [editable-list {:items (:reading-list current-essay)
+                              :on-item-added #(re-frame/dispatch [::events/reading-list-item-added %])
+                              :on-item-removed #(re-frame/dispatch [::events/reading-list-item-removed %])}]
+              [gap :size "15px"]
+              [button
+               :disabled? (empty? (:reading-list current-essay)) :class "btn-primary" :label "Next Step"
+               :on-click #(re-frame/dispatch [::events/next-step])]]])
 
 
-(defn topic-choice []
-  (let [*current-essay (re-frame/subscribe [::subs/current-essay])]
-    (if @*current-essay
-      [v-box
-       :children [[p "You now need to choose your topic, and the length your essay will be."]
-                  [:ul.list-group {:style {:max-width "500px"}}
-                   (->> (:candidate-topics @*current-essay)
-                        (map #(-> [:a.list-group-item.list-group-item-active
-                                   {:href "#"
-                                    :class (when (= % (:title @*current-essay)) "active")
-                                    :on-click (partial re-frame/dispatch [::events/topic-selected %])}
-                                   %])))]
-                  [gap :size "15px"]
-                  [label :label "Target Essay Length"]
-                  [input-text
-                   :model (str (:target-length @*current-essay))
-                   :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int %)])]
-                  [gap :size "15px"]
-                  [button
-                   :disabled? (not (and (contains? (:candidate-topics @*current-essay) (:title @*current-essay))
-                                        (:target-length @*current-essay)))
-                   :class "btn-primary"
-                   :label "Next Step"
-                   :on-click #(re-frame/dispatch [::events/next-step])]]]
-      [p "Essay not found!"])))
+(defn topic-choice [current-essay]
+  [v-box
+   :children [[p "You now need to choose your topic, and the length your essay will be."]
+              [:ul.list-group {:style {:max-width "500px"}}
+               (->> (:candidate-topics current-essay)
+                    (map #(-> [:a.list-group-item.list-group-item-active
+                               {:href "#"
+                                :class (when (= % (:title current-essay)) "active")
+                                :on-click (partial re-frame/dispatch [::events/topic-selected %])}
+                               %])))]
+              [gap :size "15px"]
+              [label :label "Target Essay Length"]
+              [input-text
+               :model (str (:target-length current-essay))
+               :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int %)])]
+              [gap :size "15px"]
+              [button
+               :disabled? (not (and (contains? (:candidate-topics current-essay) (:title current-essay))
+                                    (:target-length current-essay)))
+               :class "btn-primary"
+               :label "Next Step"
+               :on-click #(re-frame/dispatch [::events/next-step])]]])
 
-;; main
+(defn not-found []
+  [p "Route not found!"])
 
-(defn panels [panel-name]
-  (case panel-name
-    :home [home]
-    :about [about]
-    :candidate-topics [candidate-topics]
-    :reading-list [reading-list]
-    :topic-choice [topic-choice]
-    [:p "Route not found!"]))
+(defn pages [page]
+  (let [page-component   (case page
+                           :home home
+                           :about about
+                           :candidate-topics candidate-topics
+                           :reading-list reading-list
+                           :topic-choice topic-choice
+                           not-found)
+        for-single-essay (not (contains? #{home about not-found} page-component))]
+    (if for-single-essay
+      (let [*current-essay (re-frame/subscribe [::subs/current-essay])]
+        (if @*current-essay
+          [v-box
+           :children [[title :level :level2 :underline? true :label (:title @*current-essay)]
+                      [gap :size "12px"]
+                      [title :level :level3 :underline? true :label (utils/displayable-step-name page)]
+                      [gap :size "10px"]
+                      [page-component @*current-essay]]]
+          [p "Essay not found!"]))
+      [page-component])))
 
 
 (defn main-panel []
@@ -127,4 +131,4 @@
                  :align :center]
                 [line]
                 [gap :size "15px"]
-                [panels @*active-page]]]))
+                [pages @*active-page]]]))
