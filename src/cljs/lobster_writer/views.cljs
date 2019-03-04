@@ -4,7 +4,8 @@
     [lobster-writer.subs :as subs]
     [lobster-writer.events :as events]
     [lobster-writer.components.editable-list :refer [editable-list]]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href]]))
+    [lobster-writer.utils :as utils]
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text]]))
 
 
 ;; home
@@ -65,10 +66,37 @@
                                   :on-item-added #(re-frame/dispatch [::events/reading-list-item-added %])
                                   :on-item-removed #(re-frame/dispatch [::events/reading-list-item-removed %])}]
                   [gap :size "15px"]
-                  [button :disabled? (empty? (:reading-list @*current-essay)) :class "btn-primary" :label "Next Step"
+                  [button
+                   :disabled? (empty? (:reading-list @*current-essay)) :class "btn-primary" :label "Next Step"
                    :on-click #(re-frame/dispatch [::events/next-step])]]]
       [p "Essay not found!"])))
 
+
+(defn topic-choice []
+  (let [*current-essay (re-frame/subscribe [::subs/current-essay])]
+    (if @*current-essay
+      [v-box
+       :children [[p "You now need to choose your topic, and the length your essay will be."]
+                  [:ul.list-group {:style {:max-width "500px"}}
+                   (->> (:candidate-topics @*current-essay)
+                        (map #(-> [:a.list-group-item.list-group-item-active
+                                   {:href "#"
+                                    :class (when (= % (:title @*current-essay)) "active")
+                                    :on-click (partial re-frame/dispatch [::events/topic-selected %])}
+                                   %])))]
+                  [gap :size "15px"]
+                  [label :label "Target Essay Length"]
+                  [input-text
+                   :model (str (:target-length @*current-essay))
+                   :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int %)])]
+                  [gap :size "15px"]
+                  [button
+                   :disabled? (not (and (contains? (:candidate-topics @*current-essay) (:title @*current-essay))
+                                        (:target-length @*current-essay)))
+                   :class "btn-primary"
+                   :label "Next Step"
+                   :on-click #(re-frame/dispatch [::events/next-step])]]]
+      [p "Essay not found!"])))
 
 ;; main
 
@@ -78,6 +106,7 @@
     :about [about]
     :candidate-topics [candidate-topics]
     :reading-list [reading-list]
+    :topic-choice [topic-choice]
     [:p "Route not found!"]))
 
 

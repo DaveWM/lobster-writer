@@ -85,3 +85,19 @@
     (let [current-essay (get-in db (utils/current-essay-path db))]
       {::effects/navigate {:url (str "/essays/" (:id current-essay) "/" (name (utils/next-step (:current-step current-essay))))}
        :db db})))
+
+
+(rf/reg-event-db
+  ::topic-selected
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ topic]]
+    (assoc-in db (conj (utils/current-essay-path db) :title) topic)))
+
+
+(rf/reg-event-db
+  ::essay-target-length-changed
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ essay-length]]
+    (if (< 0 essay-length)
+      (assoc-in db (conj (utils/current-essay-path db) :target-length) essay-length)
+      (assoc-in db (conj (utils/current-essay-path db) :target-length) nil))))

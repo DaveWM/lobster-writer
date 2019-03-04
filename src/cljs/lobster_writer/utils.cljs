@@ -7,3 +7,8 @@
 (defn next-step [step]
   (let [step-idx (.indexOf constants/steps step)]
     (get constants/steps (inc step-idx))))
+
+(defn parse-int [s]
+  (let [i (js/parseInt s)]
+    (when (int? i)
+      i)))
