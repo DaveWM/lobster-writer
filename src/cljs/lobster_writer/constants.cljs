@@ -5,4 +5,5 @@
 (def steps
   [:candidate-topics
    :reading-list
-   :topic-choice])
+   :topic-choice
+   :outline])

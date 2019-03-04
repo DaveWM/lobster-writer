@@ -35,6 +35,8 @@
                (assoc-in [:essays essay-id] {:id essay-id
                                              :title (str "New Essay " (inc (count (:essays db))))
                                              :candidate-topics #{}
+                                             :reading-list []
+                                             :outline-sentences []
                                              :current-step :candidate-topics
                                              :highest-step :candidate-topics}))
        ::effects/navigate {:url (utils/step-url essay-id :candidate-topics)}})))
@@ -76,8 +78,8 @@
 (rf/reg-event-db
   ::reading-list-item-removed
   [interceptors/persist-app-db]
-  (fn-traced [db [_ topic-name]]
-    (update-in db (conj (utils/current-essay-path db) :reading-list) disj topic-name)))
+  (fn-traced [db [_ reading-list-item]]
+    (update-in db (conj (utils/current-essay-path db) :reading-list) #(remove (partial = reading-list-item) %))))
 
 
 (rf/reg-event-fx
@@ -106,3 +108,19 @@
     (if (< 0 essay-length)
       (assoc-in db (conj (utils/current-essay-path db) :target-length) essay-length)
       (assoc-in db (conj (utils/current-essay-path db) :target-length) nil))))
+
+
+(rf/reg-event-db
+  ::outline-sentence-added
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ outline-sentence]]
+    (if-not (s/blank? outline-sentence)
+      (update-in db (conj (utils/current-essay-path db) :outline-sentences) conj outline-sentence)
+      db)))
+
+
+(rf/reg-event-db
+  ::outline-sentence-removed
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ outline-sentence]]
+    (update-in db (conj (utils/current-essay-path db) :outline-sentences) #(remove (partial = outline-sentence) %))))

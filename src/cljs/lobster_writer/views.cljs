@@ -91,6 +91,25 @@
                :on-click #(re-frame/dispatch [::events/next-step])]]])
 
 
+(defn outline [current-essay]
+  (let [min-sentences (min 15 (int (/ (:target-length current-essay) 100)))]
+    [v-box
+     :children [[p "It's now time to write the outline of your essay. You need to write "
+                 [:b min-sentences] " sentences, one per 100 words of your essay (up to 15 sentences)."]
+                [gap :size "15px"]
+                [editable-list {:items (:outline-sentences current-essay)
+                                :on-item-added #(re-frame/dispatch [::events/outline-sentence-added %])
+                                :on-item-removed #(re-frame/dispatch [::events/outline-sentence-removed %])}]
+                [gap :size "5px"]
+                [p "You have written " [:b (count (:outline-sentences current-essay))] " sentences out of " [:b min-sentences] "."]
+                [gap :size "15px"]
+                [button
+                 :disabled? (> min-sentences (count (:outline-sentences current-essay)))
+                 :class "btn-primary"
+                 :label "Next Step"
+                 :on-click #(re-frame/dispatch [::events/next-step])]]]))
+
+
 (defn essay-step [current-essay page page-component]
   [v-box
    :children [[title :level :level2 :underline? true :label (:title current-essay)]
@@ -130,6 +149,7 @@
                            :candidate-topics candidate-topics
                            :reading-list reading-list
                            :topic-choice topic-choice
+                           :outline outline
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay
