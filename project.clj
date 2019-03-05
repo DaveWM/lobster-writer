@@ -7,7 +7,9 @@
                  [kibu/pushy "0.3.8"]
                  [garden "1.3.5"]
                  [ns-tracker "0.3.1"]
-                 [re-com "2.4.0"]]
+                 [re-com "2.4.0"]
+                 [cljsjs/react-quill "1.1.0-0"]
+                 ]
 
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-garden "0.3.0"]]
@@ -15,6 +17,7 @@
   :min-lein-version "2.5.3"
 
   :source-paths ["src/clj" "src/cljs"]
+
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"
                                     "test/js"]
@@ -71,4 +74,7 @@
                 :output-to "resources/public/js/compiled/test.js"
                 :output-dir "resources/public/js/compiled/test/out"
                 :optimizations :none}}]}
+
+
+  :repositories {"local" "file:lib"}
   )

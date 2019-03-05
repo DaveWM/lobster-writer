@@ -7,7 +7,12 @@
     [lobster-writer.utils :as utils]
     [lobster-writer.constants :as constants]
     [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split input-textarea]]
-    [clojure.string :as s]))
+    [clojure.string :as s]
+    [reagent.core :as r]
+    [cljsjs.react-quill]))
+
+
+(def quill (r/adapt-react-class js/ReactQuill))
 
 
 ;; home
@@ -27,7 +32,7 @@
                                   :on-click (partial re-frame/dispatch [::events/essay-selected (:id %)])}
                                  (:title %)])))]
                 [gap :size "10px"]
-                [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]]]))
+                [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/jstart-new-essay])]]]))
 
 
 (defn about []
@@ -118,12 +123,8 @@
                      (->> (:outline current-essay)
                           (mapcat (fn [outline]
                                     [[label :label (:heading outline)]
-                                     [input-textarea
-                                      :model (:paragraph outline)
-                                      :change-on-blur? false
-                                      :on-change #(re-frame/dispatch [::events/outline-paragraph-updated outline %])
-                                      :rows 8
-                                      :width "450px"]
+                                     [quill {:default-value (:paragraph outline)
+                                             :on-change #(re-frame/dispatch [::events/outline-paragraph-updated outline %])}]
                                      [p "You have written " [:b (count (utils/sentences (:paragraph outline)))] " sentences."]])))
                      [[button
                        :disabled? (not-every? #(not (s/blank? (:paragraph %))) (:outline current-essay))
