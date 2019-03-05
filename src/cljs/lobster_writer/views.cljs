@@ -32,7 +32,7 @@
                                   :on-click (partial re-frame/dispatch [::events/essay-selected (:id %)])}
                                  (:title %)])))]
                 [gap :size "10px"]
-                [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/jstart-new-essay])]]]))
+                [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]]]))
 
 
 (defn about []
