@@ -36,7 +36,7 @@
                                              :title (str "New Essay " (inc (count (:essays db))))
                                              :candidate-topics #{}
                                              :reading-list []
-                                             :outline-sentences []
+                                             :outline []
                                              :current-step :candidate-topics
                                              :highest-step :candidate-topics}))
        ::effects/navigate {:url (utils/step-url essay-id :candidate-topics)}})))
@@ -71,7 +71,7 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ reading-list-item]]
     (if-not (s/blank? reading-list-item)
-      (update-in db (conj (utils/current-essay-path db) :reading-list) conj reading-list-item)
+      (update-in db (conj (utils/current-essay-path db) :reading-list) concat [reading-list-item])
       db)))
 
 
@@ -111,16 +111,26 @@
 
 
 (rf/reg-event-db
-  ::outline-sentence-added
+  ::outline-heading-added
   [interceptors/persist-app-db]
-  (fn-traced [db [_ outline-sentence]]
-    (if-not (s/blank? outline-sentence)
-      (update-in db (conj (utils/current-essay-path db) :outline-sentences) conj outline-sentence)
+  (fn-traced [db [_ outline-heading]]
+    (if-not (s/blank? outline-heading)
+      (update-in db (conj (utils/current-essay-path db) :outline) concat [{:heading outline-heading}])
       db)))
 
 
 (rf/reg-event-db
-  ::outline-sentence-removed
+  ::outline-heading-removed
   [interceptors/persist-app-db]
-  (fn-traced [db [_ outline-sentence]]
-    (update-in db (conj (utils/current-essay-path db) :outline-sentences) #(remove (partial = outline-sentence) %))))
+  (fn-traced [db [_ outline-heading]]
+    (update-in db (conj (utils/current-essay-path db) :outline) (fn [outline]
+                                                                  (remove #(= outline-heading (:heading %)) outline)))))
+
+
+(rf/reg-event-db
+  ::outline-paragraph-updated
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ outline updated-paragraph]]
+    (update-in db (conj (utils/current-essay-path db) :outline) (partial map #(if (= (:heading %) (:heading outline))
+                                                                                (assoc % :paragraph updated-paragraph)
+                                                                                %)))))

@@ -6,4 +6,5 @@
   [:candidate-topics
    :reading-list
    :topic-choice
-   :outline])
+   :outline
+   :outline-paragraphs])

@@ -30,3 +30,7 @@
 
 (defn step-url [essay-id step]
   (str "/essays/" essay-id "/" (name step)))
+
+(defn sentences [text]
+  (when text
+    (re-seq #"(?:\s|^)+[^.!?]*[.!?]" text)))

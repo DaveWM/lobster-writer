@@ -6,7 +6,8 @@
     [lobster-writer.components.editable-list :refer [editable-list]]
     [lobster-writer.utils :as utils]
     [lobster-writer.constants :as constants]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split]]))
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split input-textarea]]
+    [clojure.string :as s]))
 
 
 ;; home
@@ -95,19 +96,40 @@
   (let [min-sentences (min 15 (int (/ (:target-length current-essay) 100)))]
     [v-box
      :children [[p "It's now time to write the outline of your essay. You need to write "
-                 [:b min-sentences] " sentences, one per 100 words of your essay (up to 15 sentences)."]
+                 [:b min-sentences] " headings, one per 100 words of your essay (up to 15 headings)."]
                 [gap :size "15px"]
-                [editable-list {:items (:outline-sentences current-essay)
-                                :on-item-added #(re-frame/dispatch [::events/outline-sentence-added %])
-                                :on-item-removed #(re-frame/dispatch [::events/outline-sentence-removed %])}]
+                [editable-list {:items (map :heading (:outline current-essay))
+                                :on-item-added #(re-frame/dispatch [::events/outline-heading-added %])
+                                :on-item-removed #(re-frame/dispatch [::events/outline-heading-removed %])}]
                 [gap :size "5px"]
-                [p "You have written " [:b (count (:outline-sentences current-essay))] " sentences out of " [:b min-sentences] "."]
+                [p "You have written " [:b (count (:outline current-essay))] " headings out of " [:b min-sentences] "."]
                 [gap :size "15px"]
                 [button
-                 :disabled? (> min-sentences (count (:outline-sentences current-essay)))
+                 :disabled? (> min-sentences (count (:outline current-essay)))
                  :class "btn-primary"
                  :label "Next Step"
                  :on-click #(re-frame/dispatch [::events/next-step])]]]))
+
+
+(defn outline-paragraphs [current-essay]
+  [v-box
+   :children (concat [[p "Aim to write about " [:b "10 to 15"] " sentences per outline heading."
+                       "You can write more or less if you want."]]
+                     (->> (:outline current-essay)
+                          (mapcat (fn [outline]
+                                    [[label :label (:heading outline)]
+                                     [input-textarea
+                                      :model (:paragraph outline)
+                                      :change-on-blur? false
+                                      :on-change #(re-frame/dispatch [::events/outline-paragraph-updated outline %])
+                                      :rows 8
+                                      :width "450px"]
+                                     [p "You have written " [:b (count (utils/sentences (:paragraph outline)))] " sentences."]])))
+                     [[button
+                       :disabled? (not-every? #(not (s/blank? (:paragraph %))) (:outline current-essay))
+                       :class "btn-primary"
+                       :label "Next Step"
+                       :on-click #(re-frame/dispatch [::events/next-step])]])])
 
 
 (defn essay-step [current-essay page page-component]
@@ -150,6 +172,7 @@
                            :reading-list reading-list
                            :topic-choice topic-choice
                            :outline outline
+                           :outline-paragraphs outline-paragraphs
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay
