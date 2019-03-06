@@ -7,4 +7,5 @@
    :reading-list
    :topic-choice
    :outline
-   :outline-paragraphs])
+   :outline-paragraphs
+   :rewrite-sentences])

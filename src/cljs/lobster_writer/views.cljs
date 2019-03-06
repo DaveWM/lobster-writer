@@ -104,7 +104,7 @@
      :children [[p "It's now time to write the outline of your essay. You need to write "
                  [:b min-sentences] " headings, one per 100 words of your essay (up to 15 headings)."]
                 [gap :size "15px"]
-                [editable-list {:items (map :heading (:outline current-essay))
+                [editable-list {:items (map key (:outline current-essay))
                                 :on-item-added #(re-frame/dispatch [::events/outline-heading-added %])
                                 :on-item-removed #(re-frame/dispatch [::events/outline-heading-removed %])}]
                 [gap :size "5px"]
@@ -122,19 +122,51 @@
    :children (concat [[p "Aim to write about " [:b "10 to 15"] " sentences per outline heading."
                        "You can write more or less if you want."]]
                      (->> (:outline current-essay)
-                          (mapcat (fn [outline]
-                                    [[label :label (:heading outline)]
+                          (mapcat (fn [[heading section]]
+                                    [[label :label heading]
                                      [input-textarea
-                                      :model (:paragraph outline)
+                                      :model (:paragraph section)
                                       :change-on-blur? false
-                                      :on-change #(re-frame/dispatch [::events/outline-paragraph-updated outline %])
+                                      :on-change #(re-frame/dispatch [::events/outline-paragraph-updated heading %])
                                       :rows 8
                                       :width "450px"]
                                      #_[quill {:default-value (:paragraph outline)
                                              :on-change #(re-frame/dispatch [::events/outline-paragraph-updated outline %])}]
-                                     [p "You have written " [:b (count (utils/sentences (:paragraph outline)))] " sentences."]])))
+                                     [p "You have written " [:b (count (:sentences section))] " sentences."]])))
                      [[button
-                       :disabled? (not-every? #(not (s/blank? (:paragraph %))) (:outline current-essay))
+                       :disabled? (not-every? (comp #(not (s/blank? (:paragraph %))) val) (:outline current-essay))
+                       :class "btn-primary"
+                       :label "Next Step"
+                       :on-click #(re-frame/dispatch [::events/next-step])]])])
+
+
+(defn rewrite-sentences [current-essay]
+  [v-box
+   :children (concat [[p
+                       "Re-write all the sentences you wrote in the previous step. "
+                       "If you can't improve on a sentence, just copy and paste it into the input box."
+                       "If you want to completely remove a sentence, leave the input box blank."]]
+                     (->> (:outline current-essay)
+                          (map (fn [[heading section]]
+                                 [v-box
+                                  :children [[title :level :level3 :label heading]
+                                             (->> (:sentences section)
+                                                  (mapcat (fn [[idx sentence]]
+                                                            [[label :label (:v1 sentence)]
+                                                             [input-textarea
+                                                              :rows 2
+                                                              :width "400px"
+                                                              :model (:v2 sentence)
+                                                              :on-change #(re-frame/dispatch [::events/sentence-rewritten heading idx %])]
+                                                             [gap :size "5px"]])))]])))
+                     [[gap :size "15px"]
+                      [button
+                       :disabled? (->> (get-in current-essay [:outline])
+                                       (map val)
+                                       (mapcat :sentences)
+                                       (map (comp :v2 second))
+                                       (some (complement s/blank?))
+                                       not)
                        :class "btn-primary"
                        :label "Next Step"
                        :on-click #(re-frame/dispatch [::events/next-step])]])])
@@ -181,6 +213,7 @@
                            :topic-choice topic-choice
                            :outline outline
                            :outline-paragraphs outline-paragraphs
+                           :rewrite-sentences rewrite-sentences
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay

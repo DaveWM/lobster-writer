@@ -87,7 +87,7 @@
   [interceptors/persist-app-db]
   (fn-traced [{:keys [db]} _]
     (let [current-essay (get-in db (utils/current-essay-path db))
-          next-step (utils/next-step (:current-step current-essay))]
+          next-step     (utils/next-step (:current-step current-essay))]
       {::effects/navigate {:url (utils/step-url (:id current-essay) next-step)}
        :db (if (utils/step-after? next-step (:highest-step current-essay))
              (assoc-in db (conj (utils/current-essay-path db) :highest-step) next-step)
@@ -115,7 +115,7 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ outline-heading]]
     (if-not (s/blank? outline-heading)
-      (update-in db (conj (utils/current-essay-path db) :outline) concat [{:heading outline-heading}])
+      (assoc-in db (conj (utils/current-essay-path db) :outline outline-heading) {:heading outline-heading})
       db)))
 
 
@@ -123,14 +123,23 @@
   ::outline-heading-removed
   [interceptors/persist-app-db]
   (fn-traced [db [_ outline-heading]]
-    (update-in db (conj (utils/current-essay-path db) :outline) (fn [outline]
-                                                                  (remove #(= outline-heading (:heading %)) outline)))))
+    (update-in db (conj (utils/current-essay-path db) :outline) dissoc outline-heading)))
 
 
 (rf/reg-event-db
   ::outline-paragraph-updated
   [interceptors/persist-app-db]
-  (fn-traced [db [_ outline updated-paragraph]]
-    (update-in db (conj (utils/current-essay-path db) :outline) (partial map #(if (= (:heading %) (:heading outline))
-                                                                                (assoc % :paragraph updated-paragraph)
-                                                                                %)))))
+  (fn-traced [db [_ heading updated-paragraph]]
+    (-> db
+        (assoc-in (conj (utils/current-essay-path db) :outline heading :paragraph) updated-paragraph)
+        (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences) (->> (utils/sentences updated-paragraph)
+                                                                                        (map-indexed (fn [idx sentence]
+                                                                                                       [idx {:v1 sentence}]))
+                                                                                        (into {}))))))
+
+
+(rf/reg-event-db
+  ::sentence-rewritten
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ heading idx updated-sentence]]
+    (assoc-in db (conj (utils/current-essay-path db) :outline heading :sentences idx :v2) updated-sentence)))

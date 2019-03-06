@@ -33,4 +33,4 @@
 
 (defn sentences [text]
   (when text
-    (re-seq #"(?:\s|^)+[^.!?]*[.!?]" text)))
+    (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (s/trim text))))
