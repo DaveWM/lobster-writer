@@ -9,10 +9,11 @@
     [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split input-textarea]]
     [clojure.string :as s]
     [reagent.core :as r]
-    [cljsjs.react-quill]))
+    ;[cljsjs.react-quill]
+    ))
 
 
-(def quill (r/adapt-react-class js/ReactQuill))
+;(def quill (r/adapt-react-class js/ReactQuill))
 
 
 ;; home
@@ -123,7 +124,13 @@
                      (->> (:outline current-essay)
                           (mapcat (fn [outline]
                                     [[label :label (:heading outline)]
-                                     [quill {:default-value (:paragraph outline)
+                                     [input-textarea
+                                      :model (:paragraph outline)
+                                      :change-on-blur? false
+                                      :on-change #(re-frame/dispatch [::events/outline-paragraph-updated outline %])
+                                      :rows 8
+                                      :width "450px"]
+                                     #_[quill {:default-value (:paragraph outline)
                                              :on-change #(re-frame/dispatch [::events/outline-paragraph-updated outline %])}]
                                      [p "You have written " [:b (count (utils/sentences (:paragraph outline)))] " sentences."]])))
                      [[button

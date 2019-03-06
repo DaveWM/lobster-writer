@@ -8,7 +8,7 @@
                  [garden "1.3.5"]
                  [ns-tracker "0.3.1"]
                  [re-com "2.4.0"]
-                 [cljsjs/react-quill "1.1.0-0"]
+                 ;[cljsjs/react-quill "1.1.0-0"]
                  ]
 
   :plugins [[lein-cljsbuild "1.1.7"]
