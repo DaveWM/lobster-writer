@@ -8,4 +8,5 @@
    :topic-choice
    :outline
    :outline-paragraphs
-   :rewrite-sentences])
+   :rewrite-sentences
+   :reorder-sentences])

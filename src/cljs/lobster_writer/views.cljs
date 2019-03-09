@@ -125,16 +125,14 @@
                           (mapcat (fn [[heading section]]
                                     [[label :label heading]
                                      [input-textarea
-                                      :model (:paragraph section)
+                                      :model (:v1 (:paragraph section))
                                       :change-on-blur? false
                                       :on-change #(re-frame/dispatch [::events/outline-paragraph-updated heading %])
                                       :rows 8
                                       :width "450px"]
-                                     #_[quill {:default-value (:paragraph outline)
-                                             :on-change #(re-frame/dispatch [::events/outline-paragraph-updated outline %])}]
-                                     [p "You have written " [:b (count (:sentences section))] " sentences."]])))
+                                     [p "You have written " [:b (count (get-in section [:sentences :v1]))] " sentences."]])))
                      [[button
-                       :disabled? (not-every? (comp #(not (s/blank? (:paragraph %))) val) (:outline current-essay))
+                       :disabled? (not-every? (comp #(not (s/blank? (:v1 (:paragraph %)))) val) (:outline current-essay))
                        :class "btn-primary"
                        :label "Next Step"
                        :on-click #(re-frame/dispatch [::events/next-step])]])])
@@ -150,23 +148,40 @@
                           (map (fn [[heading section]]
                                  [v-box
                                   :children [[title :level :level3 :label heading]
-                                             (->> (:sentences section)
-                                                  (mapcat (fn [[idx sentence]]
-                                                            [[label :label (:v1 sentence)]
+                                             (->> (get-in section [:sentences :v1])
+                                                  (map-indexed (fn [idx v1]
+                                                                 [idx v1 (get-in section [:sentences :v2 idx])]))
+                                                  (mapcat (fn [[idx v1 v2]]
+                                                            [[label :label v1]
                                                              [input-textarea
                                                               :rows 2
                                                               :width "400px"
-                                                              :model (:v2 sentence)
+                                                              :model v2
                                                               :on-change #(re-frame/dispatch [::events/sentence-rewritten heading idx %])]
                                                              [gap :size "5px"]])))]])))
                      [[gap :size "15px"]
                       [button
                        :disabled? (->> (get-in current-essay [:outline])
-                                       (map val)
-                                       (mapcat :sentences)
-                                       (map (comp :v2 second))
-                                       (some (complement s/blank?))
-                                       not)
+                                       (mapcat (comp :v2 :sentences val))
+                                       (every? s/blank?))
+                       :class "btn-primary"
+                       :label "Next Step"
+                       :on-click #(re-frame/dispatch [::events/next-step])]])])
+
+
+(defn reorder-sentences [current-essay]
+  [v-box
+   :children (concat [[p "Re-order the sentences within each paragraph."]]
+                     (->> (:outline current-essay)
+                          (map (fn [[heading section]]
+                                 [v-box
+                                  :children [[title :level :level3 :label heading]
+                                             [p (get-in section [:paragraph :v2])]
+                                             [editable-list {:items (get-in section [:sentences :v2])
+                                                             :on-item-moved-up #(re-frame/dispatch [::events/sentence-moved-up heading %])
+                                                             :on-item-moved-down #(re-frame/dispatch [::events/sentence-moved-down heading %])}]]])))
+                     [[gap :size "15px"]
+                      [button
                        :class "btn-primary"
                        :label "Next Step"
                        :on-click #(re-frame/dispatch [::events/next-step])]])])
@@ -214,6 +229,7 @@
                            :outline outline
                            :outline-paragraphs outline-paragraphs
                            :rewrite-sentences rewrite-sentences
+                           :reorder-sentences reorder-sentences
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay

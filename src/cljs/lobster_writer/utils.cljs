@@ -33,4 +33,7 @@
 
 (defn sentences [text]
   (when text
-    (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (s/trim text))))
+    (vec (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (s/trim text)))))
+
+(defn join-sentences [sentences]
+  (s/join sentences))
