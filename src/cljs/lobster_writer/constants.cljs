@@ -13,4 +13,5 @@
    :reorder-paragraphs
    :read-draft
    :second-outline
-   :copy-from-draft])
+   :copy-from-draft
+   :final-essay])

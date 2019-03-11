@@ -244,8 +244,9 @@
    :children (concat [[p
                        "Copy from your draft essay into the new outline. "
                        "You'll get a chance to edit your essay in the next step, so don't worry about the formatting too much."]]
-                     (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
-                          (map (comp :v2 :paragraph))
+                     (->> (:second-outline current-essay)
+                          vals
+                          (map :paragraph)
                           (map #(-> [p {:style {:text-indent "20px"}} %])))
                      (->> (:second-outline current-essay)
                           (mapcat (fn [[heading section]]
@@ -261,6 +262,16 @@
                        :class "btn-primary"
                        :label "Next Step"
                        :on-click #(re-frame/dispatch [::events/next-step])]])])
+
+
+(defn final-essay [current-essay]
+  [v-box
+   :children [[p "You can now format your final essay."]
+              [input-textarea
+               :rows 12
+               :width "450px"
+               :model (:final-essay current-essay)
+               :on-change #(re-frame/dispatch [::events/final-essay-updated %])]]])
 
 
 (defn essay-step [current-essay page page-component]
@@ -310,6 +321,7 @@
                            :read-draft read-draft
                            :second-outline second-outline
                            :copy-from-draft copy-from-draft
+                           :final-essay final-essay
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay

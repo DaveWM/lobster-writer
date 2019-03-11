@@ -38,6 +38,7 @@
                                              :reading-list []
                                              :outline {}
                                              :paragraph-order []
+                                             :final-essay ""
                                              :current-step :candidate-topics
                                              :highest-step :candidate-topics}))
        ::effects/navigate {:url (utils/step-url essay-id :candidate-topics)}})))
@@ -221,4 +222,19 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ heading updated-paragraph]]
     (-> db
-        (assoc-in (conj (utils/current-essay-path db) :second-outline heading :paragraph) updated-paragraph))))
+        (assoc-in (conj (utils/current-essay-path db) :second-outline heading :paragraph) updated-paragraph)
+        (update-in (utils/current-essay-path db) (fn [current-essay]
+                                                   (let [final-essay (->> (:second-outline current-essay)
+                                                                          vals
+                                                                          (map :paragraph)
+                                                                          (map (partial str "     "))
+                                                                          (s/join "\n\n"))]
+                                                     (assoc current-essay :final-essay final-essay)))))))
+
+
+(rf/reg-event-db
+  ::final-essay-updated
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ updated-final-essay]]
+    (-> db
+        (assoc-in (conj (utils/current-essay-path db) :final-essay) updated-final-essay))))
