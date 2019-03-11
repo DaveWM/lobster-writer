@@ -13,7 +13,7 @@
                                      [:li.list-group-item.list-group-item-active
                                       [rc/h-box
                                        :justify :between
-                                       :children [[:span item]
+                                       :children [[:span (label-fn item)]
                                                   [:span
                                                    (when on-item-removed
                                                      [rc/md-icon-button

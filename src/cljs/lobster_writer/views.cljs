@@ -187,6 +187,26 @@
                        :on-click #(re-frame/dispatch [::events/next-step])]])])
 
 
+(defn reorder-paragraphs [current-essay]
+  (let [ordered-sections (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))]
+    [v-box
+     :children (concat [[p "Now re-order the paragraphs."]
+                        (map #(-> [p %]) (:paragraph-order current-essay))
+                        [editable-list {:items ordered-sections
+                                        :label-fn #(get-in % [:paragraph :v2])
+                                        :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
+                                        :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
+                        [gap :size "15px"]]
+                       (->> ordered-sections
+                            (map (comp :v2 :paragraph))
+                            (map #(-> [p {:style {:text-indent "20px"}} %])))
+                       [[gap :size "15px"]
+                        [button
+                         :class "btn-primary"
+                         :label "Next Step"
+                         :on-click #(re-frame/dispatch [::events/next-step])]])]))
+
+
 (defn essay-step [current-essay page page-component]
   [v-box
    :children [[title :level :level2 :underline? true :label (:title current-essay)]
@@ -230,6 +250,7 @@
                            :outline-paragraphs outline-paragraphs
                            :rewrite-sentences rewrite-sentences
                            :reorder-sentences reorder-sentences
+                           :reorder-paragraphs reorder-paragraphs
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay

@@ -9,4 +9,5 @@
    :outline
    :outline-paragraphs
    :rewrite-sentences
-   :reorder-sentences])
+   :reorder-sentences
+   :reorder-paragraphs])

@@ -36,7 +36,8 @@
                                              :title (str "New Essay " (inc (count (:essays db))))
                                              :candidate-topics #{}
                                              :reading-list []
-                                             :outline []
+                                             :outline {}
+                                             :paragraph-order []
                                              :current-step :candidate-topics
                                              :highest-step :candidate-topics}))
        ::effects/navigate {:url (utils/step-url essay-id :candidate-topics)}})))
@@ -115,10 +116,12 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ outline-heading]]
     (if-not (s/blank? outline-heading)
-      (assoc-in db (conj (utils/current-essay-path db) :outline outline-heading) {:heading outline-heading
-                                                                                  :paragraph {}
-                                                                                  :sentences {:v1 []
-                                                                                              :v2 []}})
+      (-> db
+          (assoc-in (conj (utils/current-essay-path db) :outline outline-heading) {:heading outline-heading
+                                                                                   :paragraph {}
+                                                                                   :sentences {:v1 []
+                                                                                               :v2 []}})
+          (update-in (conj (utils/current-essay-path db) :paragraph-order) conj outline-heading))
       db)))
 
 
@@ -126,7 +129,9 @@
   ::outline-heading-removed
   [interceptors/persist-app-db]
   (fn-traced [db [_ outline-heading]]
-    (update-in db (conj (utils/current-essay-path db) :outline) dissoc outline-heading)))
+    (-> db
+        (update-in (conj (utils/current-essay-path db) :outline) dissoc outline-heading)
+        (update-in (conj (utils/current-essay-path db) :paragraph-order) #(remove (partial = outline-heading) %)))))
 
 
 (rf/reg-event-db
@@ -159,10 +164,7 @@
     (-> db
         (update-in (conj (utils/current-essay-path db) :outline heading :sentences :v2)
                    (fn [sentences]
-                     (let [curr-idx (.indexOf sentences moved-sentence)]
-                       (-> sentences
-                           (assoc curr-idx (get sentences (dec curr-idx)))
-                           (assoc (dec curr-idx) moved-sentence)))))
+                     (utils/move-element sentences moved-sentence -1)))
         (update-in (conj (utils/current-essay-path db) :outline heading) #(update-paragraph-from-sentences :v2 %)))))
 
 
@@ -173,8 +175,23 @@
     (-> db
         (update-in (conj (utils/current-essay-path db) :outline heading :sentences :v2)
                    (fn [sentences]
-                     (let [curr-idx (.indexOf sentences moved-sentence)]
-                       (-> sentences
-                           (assoc curr-idx (get sentences (inc curr-idx)))
-                           (assoc (inc curr-idx) moved-sentence)))))
+                     (utils/move-element sentences moved-sentence 1)))
         (update-in (conj (utils/current-essay-path db) :outline heading) #(update-paragraph-from-sentences :v2 %)))))
+
+
+(rf/reg-event-db
+  ::paragraph-moved-up
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ moved-section]]
+    (update-in db (conj (utils/current-essay-path db) :paragraph-order)
+               (fn [ordering]
+                 (utils/move-element ordering (:heading moved-section) -1)))))
+
+
+(rf/reg-event-db
+  ::paragraph-moved-down
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ moved-section]]
+    (update-in db (conj (utils/current-essay-path db) :paragraph-order)
+               (fn [ordering]
+                 (utils/move-element ordering (:heading moved-section) 1)))))

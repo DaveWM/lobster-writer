@@ -37,3 +37,33 @@
 
 (defn join-sentences [sentences]
   (s/join sentences))
+
+
+(defn ordered-by [m ordering]
+  (->> ordering
+       (map #(get m %))
+       vec))
+
+
+(defn move-element-forwards [xs x places]
+  (let [curr-idx (.indexOf xs x)
+        new-idx  (+ curr-idx places)]
+    (->> (concat (subvec xs 0 curr-idx)
+                 (subvec xs (inc curr-idx) (inc new-idx))
+                 [x]
+                 (subvec xs (inc new-idx)))
+         vec)))
+
+
+(defn move-element-backwards [xs x places]
+  (->> (move-element-forwards (vec (reverse xs)) x places)
+       reverse
+       vec))
+
+
+(defn move-element [xs x places]
+  "Moves the given element x the given number of places in the xs vector.
+   If places is positive, moves the element forwards, else backwards."
+  (if (neg? places)
+    (move-element-backwards xs x (- places))
+    (move-element-forwards xs x places)))
