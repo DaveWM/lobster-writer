@@ -12,4 +12,5 @@
    :reorder-sentences
    :reorder-paragraphs
    :read-draft
-   :second-outline])
+   :second-outline
+   :copy-from-draft])

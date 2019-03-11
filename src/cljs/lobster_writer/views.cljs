@@ -239,6 +239,30 @@
                  :on-click #(re-frame/dispatch [::events/next-step])]]]))
 
 
+(defn copy-from-draft [current-essay]
+  [v-box
+   :children (concat [[p
+                       "Copy from your draft essay into the new outline. "
+                       "You'll get a chance to edit your essay in the next step, so don't worry about the formatting too much."]]
+                     (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                          (map (comp :v2 :paragraph))
+                          (map #(-> [p {:style {:text-indent "20px"}} %])))
+                     (->> (:second-outline current-essay)
+                          (mapcat (fn [[heading section]]
+                                    [[label :label heading]
+                                     [input-textarea
+                                      :model (:paragraph section)
+                                      :change-on-blur? false
+                                      :on-change #(re-frame/dispatch [::events/second-outline-paragraph-updated heading %])
+                                      :rows 8
+                                      :width "450px"]])))
+                     [[button
+                       :disabled? (not-every? (comp #(not (s/blank? (:paragraph %))) val) (:second-outline current-essay))
+                       :class "btn-primary"
+                       :label "Next Step"
+                       :on-click #(re-frame/dispatch [::events/next-step])]])])
+
+
 (defn essay-step [current-essay page page-component]
   [v-box
    :children [[title :level :level2 :underline? true :label (:title current-essay)]
@@ -285,6 +309,7 @@
                            :reorder-paragraphs reorder-paragraphs
                            :read-draft read-draft
                            :second-outline second-outline
+                           :copy-from-draft copy-from-draft
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay

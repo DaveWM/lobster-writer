@@ -204,7 +204,7 @@
     (if-not (s/blank? outline-heading)
       (-> db
           (assoc-in (conj (utils/current-essay-path db) :second-outline outline-heading) {:heading outline-heading
-                                                                                          :paragraph {}}))
+                                                                                          :paragraph nil}))
       db)))
 
 
@@ -214,3 +214,11 @@
   (fn-traced [db [_ outline-heading]]
     (-> db
         (update-in (conj (utils/current-essay-path db) :second-outline) dissoc outline-heading))))
+
+
+(rf/reg-event-db
+  ::second-outline-paragraph-updated
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ heading updated-paragraph]]
+    (-> db
+        (assoc-in (conj (utils/current-essay-path db) :second-outline heading :paragraph) updated-paragraph))))
