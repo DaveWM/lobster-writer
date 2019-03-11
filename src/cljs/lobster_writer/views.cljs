@@ -221,6 +221,24 @@
                  :on-click #(re-frame/dispatch [::events/next-step])]])])
 
 
+(defn second-outline [current-essay]
+  (let [min-sentences (min 15 (int (/ (:target-length current-essay) 100)))]
+    [v-box
+     :children [[p "Now write a new outline. " [:b "Don’t look back at your essay while you are doing this."]]
+                [gap :size "15px"]
+                [editable-list {:items (map key (:second-outline current-essay))
+                                :on-item-added #(re-frame/dispatch [::events/second-outline-heading-added %])
+                                :on-item-removed #(re-frame/dispatch [::events/second-outline-heading-removed %])}]
+                [gap :size "5px"]
+                [p "You have written " [:b (count (:second-outline current-essay))] " headings out of " [:b min-sentences] "."]
+                [gap :size "15px"]
+                [button
+                 :disabled? (> min-sentences (count (:second-outline current-essay)))
+                 :class "btn-primary"
+                 :label "Next Step"
+                 :on-click #(re-frame/dispatch [::events/next-step])]]]))
+
+
 (defn essay-step [current-essay page page-component]
   [v-box
    :children [[title :level :level2 :underline? true :label (:title current-essay)]
@@ -266,6 +284,7 @@
                            :reorder-sentences reorder-sentences
                            :reorder-paragraphs reorder-paragraphs
                            :read-draft read-draft
+                           :second-outline second-outline
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay

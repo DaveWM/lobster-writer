@@ -195,3 +195,22 @@
     (update-in db (conj (utils/current-essay-path db) :paragraph-order)
                (fn [ordering]
                  (utils/move-element ordering (:heading moved-section) 1)))))
+
+
+(rf/reg-event-db
+  ::second-outline-heading-added
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ outline-heading]]
+    (if-not (s/blank? outline-heading)
+      (-> db
+          (assoc-in (conj (utils/current-essay-path db) :second-outline outline-heading) {:heading outline-heading
+                                                                                          :paragraph {}}))
+      db)))
+
+
+(rf/reg-event-db
+  ::second-outline-heading-removed
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ outline-heading]]
+    (-> db
+        (update-in (conj (utils/current-essay-path db) :second-outline) dissoc outline-heading))))

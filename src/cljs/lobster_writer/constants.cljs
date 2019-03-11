@@ -11,4 +11,5 @@
    :rewrite-sentences
    :reorder-sentences
    :reorder-paragraphs
-   :read-draft])
+   :read-draft
+   :second-outline])
