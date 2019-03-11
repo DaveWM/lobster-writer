@@ -207,6 +207,20 @@
                          :on-click #(re-frame/dispatch [::events/next-step])]])]))
 
 
+(defn read-draft [current-essay]
+  [v-box
+   :children (concat
+               [[p "Read your draft essay. You don't need to memorize it, just read it as you would someone else's essay."]]
+               (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                    (map (comp :v2 :paragraph))
+                    (map #(-> [p {:style {:text-indent "20px"}} %])))
+               [[gap :size "15px"]
+                [button
+                 :class "btn-primary"
+                 :label "Next Step"
+                 :on-click #(re-frame/dispatch [::events/next-step])]])])
+
+
 (defn essay-step [current-essay page page-component]
   [v-box
    :children [[title :level :level2 :underline? true :label (:title current-essay)]
@@ -251,6 +265,7 @@
                            :rewrite-sentences rewrite-sentences
                            :reorder-sentences reorder-sentences
                            :reorder-paragraphs reorder-paragraphs
+                           :read-draft read-draft
                            not-found)
         for-single-essay (not (contains? #{home about not-found} page-component))]
     (if for-single-essay
