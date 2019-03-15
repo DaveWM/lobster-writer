@@ -41,8 +41,9 @@
   [v-box
    :children [[p "Lobster Writer is an application to help you write essays. It is based on the advice of Dr. Jordan Peterson in "
                [hyperlink-href :label "this essay writing guide" :href "https://jordanbpeterson.com/docs/430_docs/Template.docx"]
-               ". According to Peterson, this method will help you \"to write an excellent essay from beginning to end\". "
-               "Lobster Writer is free (gratis and libre) software - you can find the souce code "
+               ". According to Dr. Peterson, this method will help you \"to write an excellent essay from beginning to end\". "]
+              [p
+               "Lobster Writer is free (both gratis and libre) software - you can find the souce code "
                [hyperlink-href :label "here" :href "https://github.com/DaveWM/lobster-writer"]
                "."]
               [p {:style {:font-weight "bold"}} "Lobster Writer is not associated with Dr. Peterson in any way."]]])
@@ -192,7 +193,7 @@
 
 (defn reorder-sentences [current-essay]
   [v-box
-   :children (concat [[p "Re-order the sentences within each paragraph."]]
+   :children (concat [[p "Try re-ordering the sentences within each paragraph."]]
                      (->> (:outline current-essay)
                           (map (fn [[heading section]]
                                  [v-box
