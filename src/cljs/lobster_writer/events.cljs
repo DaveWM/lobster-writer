@@ -239,6 +239,7 @@
 (rf/reg-event-db
   ::final-essay-updated
   [interceptors/persist-app-db]
-  (fn-traced [db [_ updated-final-essay]]
+  (fn-traced [db [_ updated-final-essay-html updated-final-essay-text]]
     (-> db
-        (assoc-in (conj (utils/current-essay-path db) :final-essay) updated-final-essay))))
+        (assoc-in (conj (utils/current-essay-path db) :final-essay) updated-final-essay-html)
+        (assoc-in (conj (utils/current-essay-path db) :final-essay-word-count) (count (utils/words updated-final-essay-text))))))

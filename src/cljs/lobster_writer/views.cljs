@@ -23,8 +23,7 @@
 (defn home []
   (let [*all-essays (re-frame/subscribe [::subs/all-essays])]
     [v-box
-
-     :children [[p "Welcome to Lobster Writer, an application to help you write essays  "
+     :children [[p "Welcome to Lobster Writer, an application to help you write essays. "
                  "To start, either start a new essay or select an existing one."]
                 [gap :size "25px"]
                 [:ul.list-group {:style {:max-width "500px"}}
@@ -78,7 +77,7 @@
 
 (defn topic-choice [current-essay]
   [v-box
-   :children [[p "You now need to choose your topic, and the length your essay will be."]
+   :children [[p "You now need to choose your topic, and the length your essay will be. "]
               [:ul.list-group {:style {:max-width "500px"}}
                (->> (:candidate-topics current-essay)
                     (map #(-> [:a.list-group-item.list-group-item-active
@@ -133,7 +132,17 @@
                                       :rows 8
                                       :width "450px"]
                                      [p "You have written " [:b (count (get-in section [:sentences :v1]))] " sentences."]])))
-                     [[button
+                     [[p
+                       "You have written "
+                       (->> (:outline current-essay)
+                            vals
+                            (map (comp :v1 :paragraph))
+                            (mapcat utils/words)
+                            count)
+                       " words, out of a target number of "
+                       (:target-length current-essay)
+                       " (aim for 25% above the target, " (int (* 1.25 (:target-length current-essay))) ")"]
+                      [button
                        :disabled? (not-every? (comp #(not (s/blank? (:v1 (:paragraph %)))) val) (:outline current-essay))
                        :class "btn-primary"
                        :label "Next Step"
@@ -161,7 +170,17 @@
                                                               :model v2
                                                               :on-change #(re-frame/dispatch [::events/sentence-rewritten heading idx %])]
                                                              [gap :size "5px"]])))]])))
-                     [[gap :size "15px"]
+                     [[p
+                       "You have written "
+                       (->> (:outline current-essay)
+                            vals
+                            (map (comp :v2 :paragraph))
+                            (mapcat utils/words)
+                            count)
+                       " words, out of a target number of "
+                       (:target-length current-essay)
+                       " (aim for 25% above the target, " (int (* 1.25 (:target-length current-essay))) ")"]
+                      [gap :size "15px"]
                       [button
                        :disabled? (->> (get-in current-essay [:outline])
                                        (mapcat (comp :v2 :sentences val))
@@ -274,7 +293,13 @@
                       [editable-list {:items (:reading-list current-essay)}]
                       [title :level :level3 :label "Final Essay"]
                       [quill {:default-value (:final-essay current-essay)
-                              :on-change #(re-frame/dispatch [::events/final-essay-updated %])}]]]])
+                              :on-change (fn [html _ _ editor]
+                                           (re-frame/dispatch [::events/final-essay-updated html (.getText editor)]))}]
+                      [p
+                       "You have written "
+                       (:final-essay-word-count current-essay)
+                       " words, out of a target number of "
+                       (:target-length current-essay) "."]]]])
 
 
 (defn essay-step [current-essay page page-component]

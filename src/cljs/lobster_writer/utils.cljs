@@ -35,6 +35,10 @@
   (when text
     (vec (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (s/trim text)))))
 
+(defn words [text]
+  (when text
+    (vec (re-seq #"[^\s]+" (s/trim text)))))
+
 (defn join-sentences [sentences]
   (s/join " " sentences))
 
