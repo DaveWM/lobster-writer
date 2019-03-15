@@ -9,6 +9,14 @@
     [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
     [clojure.string :as s]))
 
+
+(defn update-paragraph-from-sentences [version section]
+  (let [paragraph (->> (get-in section [:sentences version])
+                       utils/join-sentences)]
+    (-> section
+        (assoc-in [:paragraph version] paragraph))))
+
+
 (rf/reg-event-fx
   ::initialize-db
   [(rf/inject-cofx ::coeffects/persisted-app-db)]
@@ -143,11 +151,7 @@
         (assoc-in (conj (utils/current-essay-path db) :outline heading :paragraph :v1) updated-paragraph)
         (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v1) (->> (utils/sentences updated-paragraph)
                                                                                             vec)))))
-(defn update-paragraph-from-sentences [version section]
-  (let [paragraph (->> (get-in section [:sentences version])
-                       utils/join-sentences)]
-    (-> section
-        (assoc-in [:paragraph version] paragraph))))
+
 
 (rf/reg-event-db
   ::sentence-rewritten

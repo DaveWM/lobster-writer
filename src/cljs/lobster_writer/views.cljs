@@ -6,7 +6,7 @@
     [lobster-writer.components.editable-list :refer [editable-list]]
     [lobster-writer.utils :as utils]
     [lobster-writer.constants :as constants]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split input-textarea]]
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea]]
     [clojure.string :as s]
     [reagent.core :as r]
     ;[cljsjs.react-quill]
@@ -266,7 +266,12 @@
 
 (defn final-essay [current-essay]
   [v-box
-   :children [[p "You can now format your final essay."]
+   :children [[p
+               "You can now format your final essay, and add citations if you wish."
+               "Your reading list is displayed below for you to copy citations from."]
+              [title :level :level3 :label "Reading List"]
+              [editable-list {:items (:reading-list current-essay)}]
+              [title :level :level3 :label "Final Essay"]
               [input-textarea
                :rows 12
                :width "450px"
