@@ -36,7 +36,7 @@
     (vec (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (s/trim text)))))
 
 (defn join-sentences [sentences]
-  (s/join sentences))
+  (s/join " " sentences))
 
 
 (defn ordered-by [m ordering]

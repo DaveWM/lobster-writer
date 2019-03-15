@@ -6,7 +6,9 @@
     [lobster-writer.components.editable-list :refer [editable-list]]
     [lobster-writer.utils :as utils]
     [lobster-writer.constants :as constants]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea]]
+    [lobster-writer.styles :as styles]
+    [lobster-writer.components.helpers :refer [essay-display]]
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box]]
     [clojure.string :as s]
     [reagent.core :as r]
     ;[cljsjs.react-quill]
@@ -16,13 +18,14 @@
 ;(def quill (r/adapt-react-class js/ReactQuill))
 
 
+
 ;; home
 
 (defn home []
   (let [*all-essays (re-frame/subscribe [::subs/all-essays])]
     [v-box
 
-     :children [[p "Welcome to Lobster Writer, an application to help you write essays based on the advice of Jordan Peterson. "
+     :children [[p "Welcome to Lobster Writer, an application to help you write essays  "
                  "To start, either start a new essay or select an existing one."]
                 [gap :size "25px"]
                 [:ul.list-group {:style {:max-width "500px"}}
@@ -190,35 +193,32 @@
 (defn reorder-paragraphs [current-essay]
   (let [ordered-sections (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))]
     [v-box
-     :children (concat [[p "Now re-order the paragraphs."]
-                        (map #(-> [p %]) (:paragraph-order current-essay))
-                        [editable-list {:items ordered-sections
-                                        :label-fn #(get-in % [:paragraph :v2])
-                                        :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
-                                        :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
-                        [gap :size "15px"]]
-                       (->> ordered-sections
-                            (map (comp :v2 :paragraph))
-                            (map #(-> [p {:style {:text-indent "20px"}} %])))
-                       [[gap :size "15px"]
-                        [button
-                         :class "btn-primary"
-                         :label "Next Step"
-                         :on-click #(re-frame/dispatch [::events/next-step])]])]))
+     :children [[p "If you want to, re-order the paragraphs."]
+                [gap :size "10px"]
+                [editable-list {:items ordered-sections
+                                :label-fn #(get-in % [:paragraph :v2])
+                                :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
+                                :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
+                [title :level :level3 :label "Essay"]
+                [essay-display (->> ordered-sections
+                                    (map (comp :v2 :paragraph)))]
+                [gap :size "15px"]
+                [button
+                 :class "btn-primary"
+                 :label "Next Step"
+                 :on-click #(re-frame/dispatch [::events/next-step])]]]))
 
 
 (defn read-draft [current-essay]
   [v-box
-   :children (concat
-               [[p "Read your draft essay. You don't need to memorize it, just read it as you would someone else's essay."]]
-               (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
-                    (map (comp :v2 :paragraph))
-                    (map #(-> [p {:style {:text-indent "20px"}} %])))
-               [[gap :size "15px"]
-                [button
-                 :class "btn-primary"
-                 :label "Next Step"
-                 :on-click #(re-frame/dispatch [::events/next-step])]])])
+   :children [[p "Read your draft essay. You don't need to memorize it, just read it as you would someone else's essay."]
+              [essay-display (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                                  (map (comp :v2 :paragraph)))]
+              [gap :size "15px"]
+              [button
+               :class "btn-primary"
+               :label "Next Step"
+               :on-click #(re-frame/dispatch [::events/next-step])]]])
 
 
 (defn second-outline [current-essay]
@@ -243,11 +243,10 @@
   [v-box
    :children (concat [[p
                        "Copy from your draft essay into the new outline. "
-                       "You'll get a chance to edit your essay in the next step, so don't worry about the formatting too much."]]
-                     (->> (:second-outline current-essay)
-                          vals
-                          (map :paragraph)
-                          (map #(-> [p {:style {:text-indent "20px"}} %])))
+                       "You'll get a chance to edit your final essay in the next step, so don't worry about the formatting too much."]
+                      [essay-display (->> (:second-outline current-essay)
+                                          vals
+                                          (map :paragraph))]]
                      (->> (:second-outline current-essay)
                           (mapcat (fn [[heading section]]
                                     [[label :label heading]
@@ -257,7 +256,8 @@
                                       :on-change #(re-frame/dispatch [::events/second-outline-paragraph-updated heading %])
                                       :rows 8
                                       :width "450px"]])))
-                     [[button
+                     [[gap :size "15px"]
+                      [button
                        :disabled? (not-every? (comp #(not (s/blank? (:paragraph %))) val) (:second-outline current-essay))
                        :class "btn-primary"
                        :label "Next Step"
@@ -284,13 +284,12 @@
    :children [[title :level :level2 :underline? true :label (:title current-essay)]
               [gap :size "12px"]
               [h-split
-               :initial-split 10
+               :initial-split 15
                :splitter-size "12px"
                :panel-1 [v-box
                          :size "1"
-                         :style {:background-color "#e1e8f0"
-                                 :padding-left "20px"
-                                 :padding-right "20px"
+                         :style {:background-color styles/light-gray
+                                 :padding "20px"
                                  :border-radius "8px"}
                          :children [[title :level :level3 :label "Essay Steps"]
                                     [gap :size "5px"]
