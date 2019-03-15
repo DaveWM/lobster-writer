@@ -3,7 +3,6 @@
 
 (defstyles screen
   [:.ql-editor {:min-height "180px"
-                :max-height "300px"
                 :width "550px"
                 :overflow-y "scroll"
                 :overflow-x "hidden"}])

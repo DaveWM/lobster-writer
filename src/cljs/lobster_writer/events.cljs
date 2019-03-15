@@ -231,8 +231,8 @@
                                                    (let [final-essay (->> (:second-outline current-essay)
                                                                           vals
                                                                           (map :paragraph)
-                                                                          (map (partial str "     "))
-                                                                          (s/join "\n\n"))]
+                                                                          (map #(str "<p>     " % "</p><br/>"))
+                                                                          (clojure.string/join))]
                                                      (assoc current-essay :final-essay final-essay)))))))
 
 

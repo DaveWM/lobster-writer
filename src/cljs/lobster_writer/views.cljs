@@ -8,14 +8,13 @@
     [lobster-writer.constants :as constants]
     [lobster-writer.styles :as styles]
     [lobster-writer.components.helpers :refer [essay-display]]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box]]
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box scroller]]
     [clojure.string :as s]
     [reagent.core :as r]
-    ;[cljsjs.react-quill]
-    ))
+    [cljsjs.react-quill]))
 
 
-;(def quill (r/adapt-react-class js/ReactQuill))
+(def quill (r/adapt-react-class js/ReactQuill))
 
 
 
@@ -265,18 +264,17 @@
 
 
 (defn final-essay [current-essay]
-  [v-box
-   :children [[p
-               "You can now format your final essay, and add citations if you wish."
-               "Your reading list is displayed below for you to copy citations from."]
-              [title :level :level3 :label "Reading List"]
-              [editable-list {:items (:reading-list current-essay)}]
-              [title :level :level3 :label "Final Essay"]
-              [input-textarea
-               :rows 12
-               :width "450px"
-               :model (:final-essay current-essay)
-               :on-change #(re-frame/dispatch [::events/final-essay-updated %])]]])
+  [scroller
+   :child [v-box
+           :children [[p
+                       "You can now format your final essay, and add citations if you wish. "
+                       "Your reading list is displayed below for you to copy citations from. "
+                       "When you've completed the essay, you can copy and paste it into a Word doc or Google doc."]
+                      [title :level :level3 :label "Reading List"]
+                      [editable-list {:items (:reading-list current-essay)}]
+                      [title :level :level3 :label "Final Essay"]
+                      [quill {:default-value (:final-essay current-essay)
+                              :on-change #(re-frame/dispatch [::events/final-essay-updated %])}]]]])
 
 
 (defn essay-step [current-essay page page-component]
