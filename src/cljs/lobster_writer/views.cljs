@@ -296,7 +296,7 @@
                       [title :level :level3 :label "Final Essay"]
                       [quill {:default-value (:final-essay current-essay)
                               :on-change (fn [html _ _ editor]
-                                           (re-frame/dispatch [::events/final-essay-updated html (.getText editor)]))}]
+                                           (re-frame/dispatch [::events/final-essay-updated html (.call (aget editor "getText"))]))}]
                       [p
                        "You have written "
                        (:final-essay-word-count current-essay)
