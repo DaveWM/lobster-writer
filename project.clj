@@ -64,7 +64,7 @@
      :source-paths ["src/cljs"]
      :compiler {:main lobster-writer.core
                 :output-to "resources/public/js/compiled/app.js"
-                :optimizations :simple
+                :optimizations :whitespace
                 :closure-defines {goog.DEBUG false}
                 :pretty-print false}}
 
