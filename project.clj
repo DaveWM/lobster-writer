@@ -8,7 +8,8 @@
                  [garden "1.3.5"]
                  [ns-tracker "0.3.1"]
                  [re-com "2.4.0"]
-                 [cljsjs/react-quill "1.1.0-0"]]
+                 [cljsjs/react-quill "1.1.0-0"]
+                 [cljsjs/prop-types "15.6.2-0"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-garden "0.3.0"]]
@@ -64,7 +65,7 @@
      :source-paths ["src/cljs"]
      :compiler {:main lobster-writer.core
                 :output-to "resources/public/js/compiled/app.js"
-                :optimizations :none
+                :optimizations :advanced
                 :closure-defines {goog.DEBUG false}
                 :pretty-print false}}
 

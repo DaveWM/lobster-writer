@@ -11,6 +11,7 @@
     [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box scroller]]
     [clojure.string :as s]
     [reagent.core :as r]
+    [cljsjs.prop-types]
     [cljsjs.react-quill]))
 
 
