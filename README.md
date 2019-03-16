@@ -1,6 +1,9 @@
 # lobster-writer
 
-A [re-frame](https://github.com/Day8/re-frame) application designed to ... well, that part is up to you.
+Lobster Writer is a single page app, written in ClojureScript. 
+It uses the [re-frame](https://github.com/Day8/re-frame) framework.
+
+There is no backend for Lobster Writer, all state is persisted in localstorage. 
 
 ## Development Mode
 
