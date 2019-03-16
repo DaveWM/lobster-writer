@@ -10,6 +10,7 @@
      :children [[:ul.list-group {:style {:max-width "500px"}}
                  (->> items
                       (map-indexed (fn [idx item]
+                                     ^{:key item}
                                      [:li.list-group-item.list-group-item-active
                                       [rc/h-box
                                        :justify :between

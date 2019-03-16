@@ -18,7 +18,6 @@
 (def quill (r/adapt-react-class js/ReactQuill))
 
 
-
 ;; home
 
 (defn home []
@@ -30,7 +29,8 @@
                 [:ul.list-group {:style {:max-width "500px"}}
                  (->> @*all-essays
                       (map val)
-                      (map #(-> [:a.list-group-item.list-group-item-active
+                      (map #(-> ^{:key (:id %)}
+                                [:a.list-group-item.list-group-item-active
                                  {:href "#"
                                   :on-click (partial re-frame/dispatch [::events/essay-selected (:id %)])}
                                  (:title %)])))]
@@ -321,6 +321,7 @@
                                     [:ul.nav.nav-pills.nav-stacked
                                      (->> constants/steps
                                           (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
+                                                  ^{:key %}
                                                   [:li.nav-item {:class (str (when (= (:current-step current-essay) %)
                                                                                "active ")
                                                                              (when-not enabled
