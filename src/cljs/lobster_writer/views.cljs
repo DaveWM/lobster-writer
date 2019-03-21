@@ -41,7 +41,7 @@
 (defn about []
   [v-box
    :children [[p "Lobster Writer is an application to help you write essays. It is based on the advice of Dr. Jordan Peterson in "
-               [hyperlink-href :label "this essay writing guide" :href "https://jordanbpeterson.com/docs/430_docs/Template.docx"]
+               [hyperlink-href :label "this essay writing guide" :href "/Jordan-Peterson-Writing-Template.docx"]
                ". According to Dr. Peterson, this method will help you \"to write an excellent essay from beginning to end\". "]
               [p
                "Lobster Writer is free (both gratis and libre) software - you can find the souce code "
