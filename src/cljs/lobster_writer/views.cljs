@@ -91,7 +91,8 @@
               [label :label "Target Essay Length"]
               [input-text
                :model (str (:target-length current-essay))
-               :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int %)])]
+               :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int %)])
+               :change-on-blur? false]
               [gap :size "15px"]
               [button
                :disabled? (not (and (contains? (:candidate-topics current-essay) (:title current-essay))
