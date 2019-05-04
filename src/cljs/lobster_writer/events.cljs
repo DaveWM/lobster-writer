@@ -39,16 +39,16 @@
   [(rf/inject-cofx ::coeffects/id-generator) interceptors/persist-app-db]
   (fn-traced [{:keys [db] :as cfx}]
     (let [essay-id ((::coeffects/id-generator cfx))]
-      {:db (-> db
-               (assoc-in [:essays essay-id] {:id essay-id
-                                             :title (str "New Essay " (inc (count (:essays db))))
-                                             :candidate-topics #{}
-                                             :reading-list []
-                                             :outline {}
-                                             :paragraph-order []
-                                             :final-essay ""
-                                             :current-step :candidate-topics
-                                             :highest-step :candidate-topics}))
+      {:db                (-> db
+                              (assoc-in [:essays essay-id] {:id               essay-id
+                                                            :title            (str "New Essay " (inc (count (:essays db))))
+                                                            :candidate-topics #{}
+                                                            :reading-list     []
+                                                            :outline          {}
+                                                            :paragraph-order  []
+                                                            :final-essay      ""
+                                                            :current-step     :candidate-topics
+                                                            :highest-step     :candidate-topics}))
        ::effects/navigate {:url (utils/step-url essay-id :candidate-topics)}})))
 
 
@@ -97,11 +97,11 @@
   [interceptors/persist-app-db]
   (fn-traced [{:keys [db]} _]
     (let [current-essay (get-in db (utils/current-essay-path db))
-          next-step     (utils/next-step (:current-step current-essay))]
+          next-step (utils/next-step (:current-step current-essay))]
       {::effects/navigate {:url (utils/step-url (:id current-essay) next-step)}
-       :db (if (utils/step-after? next-step (:highest-step current-essay))
-             (assoc-in db (conj (utils/current-essay-path db) :highest-step) next-step)
-             db)})))
+       :db                (if (utils/step-after? next-step (:highest-step current-essay))
+                            (assoc-in db (conj (utils/current-essay-path db) :highest-step) next-step)
+                            db)})))
 
 
 (rf/reg-event-db
@@ -124,9 +124,10 @@
   ::outline-heading-added
   [interceptors/persist-app-db]
   (fn-traced [db [_ outline-heading]]
-    (if-not (s/blank? outline-heading)
+    (if-not (or (s/blank? outline-heading)
+                (some? (get-in db (conj (utils/current-essay-path db) :outline outline-heading))))
       (-> db
-          (assoc-in (conj (utils/current-essay-path db) :outline outline-heading) {:heading outline-heading
+          (assoc-in (conj (utils/current-essay-path db) :outline outline-heading) {:heading   outline-heading
                                                                                    :paragraph {}
                                                                                    :sentences {:v1 []
                                                                                                :v2 []}})
@@ -140,17 +141,24 @@
   (fn-traced [db [_ outline-heading]]
     (-> db
         (update-in (conj (utils/current-essay-path db) :outline) dissoc outline-heading)
-        (update-in (conj (utils/current-essay-path db) :paragraph-order) #(remove (partial = outline-heading) %)))))
+        (update-in (conj (utils/current-essay-path db) :paragraph-order) (comp vec
+                                                                               (partial remove #(= % outline-heading)))))))
+
+
+
 
 
 (rf/reg-event-db
   ::outline-paragraph-updated
   [interceptors/persist-app-db]
   (fn-traced [db [_ heading updated-paragraph]]
-    (-> db
-        (assoc-in (conj (utils/current-essay-path db) :outline heading :paragraph :v1) updated-paragraph)
-        (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v1) (->> (utils/sentences updated-paragraph)
-                                                                                            vec)))))
+    (let [sentences (->> (utils/sentences updated-paragraph)
+                         vec)]
+      (-> db
+          (assoc-in (conj (utils/current-essay-path db) :outline heading :paragraph :v1) updated-paragraph)
+          (assoc-in (conj (utils/current-essay-path db) :outline heading :paragraph :v2) updated-paragraph)
+          (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v1) sentences)
+          (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v2) sentences)))))
 
 
 (rf/reg-event-db
@@ -208,7 +216,7 @@
   (fn-traced [db [_ outline-heading]]
     (if-not (s/blank? outline-heading)
       (-> db
-          (assoc-in (conj (utils/current-essay-path db) :second-outline outline-heading) {:heading outline-heading
+          (assoc-in (conj (utils/current-essay-path db) :second-outline outline-heading) {:heading   outline-heading
                                                                                           :paragraph nil}))
       db)))
 

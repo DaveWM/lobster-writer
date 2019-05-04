@@ -9,4 +9,5 @@
            :border-radius "5px"
            :padding "10px"}
    :children (->> paragraphs
-                  (map #(-> ^{:key %} [p {:style {:text-indent "20px"}} %])))])
+                  (map #(-> ^{:key %} [p {:style {:text-indent "20px"
+                                                  :width "600px"}} %])))])

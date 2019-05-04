@@ -115,7 +115,7 @@
                 [p "You have written " [:b (count (:outline current-essay))] " headings out of " [:b min-sentences] "."]
                 [gap :size "15px"]
                 [button
-                 :disabled? (> min-sentences (count (:outline current-essay)))
+                 :disabled? (> 0 (count (:outline current-essay)))
                  :class "btn-primary"
                  :label "Next Step"
                  :on-click #(re-frame/dispatch [::events/next-step])]]]))
@@ -127,14 +127,18 @@
                        "You can write more or less if you want."]]
                      (->> (:outline current-essay)
                           (mapcat (fn [[heading section]]
-                                    [[label :label heading]
+                                    [[title :level :level3 :label heading]
                                      [input-textarea
                                       :model (:v1 (:paragraph section))
                                       :change-on-blur? false
                                       :on-change #(re-frame/dispatch [::events/outline-paragraph-updated heading %])
                                       :rows 8
-                                      :width "450px"]
-                                     [p "You have written " [:b (count (get-in section [:sentences :v1]))] " sentences."]])))
+                                      :width "650px"]
+                                     [p "You have written "
+                                      [:b (count (get-in section [:sentences :v1]))]
+                                      " sentences, and "
+                                      [:b (-> (get-in section [:paragraph :v1]) (utils/words) count)]
+                                      " words."]])))
                      [[p
                        "You have written "
                        (->> (:outline current-essay)
@@ -166,10 +170,10 @@
                                                   (map-indexed (fn [idx v1]
                                                                  [idx v1 (get-in section [:sentences :v2 idx])]))
                                                   (mapcat (fn [[idx v1 v2]]
-                                                            [[label :label v1]
+                                                            [[title :level :level4 :label v1]
                                                              [input-textarea
                                                               :rows 2
-                                                              :width "400px"
+                                                              :width "650px"
                                                               :model v2
                                                               :on-change #(re-frame/dispatch [::events/sentence-rewritten heading idx %])]
                                                              [gap :size "5px"]])))]])))
@@ -265,18 +269,17 @@
    :children (concat [[p
                        "Copy from your draft essay into the new outline. "
                        "You'll get a chance to edit your final essay in the next step, so don't worry about the formatting too much."]
-                      [essay-display (->> (:second-outline current-essay)
-                                          vals
-                                          (map :paragraph))]]
+                      [essay-display (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                                          (map (comp :v2 :paragraph)))]]
                      (->> (:second-outline current-essay)
                           (mapcat (fn [[heading section]]
                                     [[label :label heading]
                                      [input-textarea
                                       :model (:paragraph section)
-                                      :change-on-blur? false
+                                      :change-on-blur? true
                                       :on-change #(re-frame/dispatch [::events/second-outline-paragraph-updated heading %])
                                       :rows 8
-                                      :width "450px"]])))
+                                      :width "650px"]])))
                      [[gap :size "15px"]
                       [button
                        :disabled? (not-every? (comp #(not (s/blank? (:paragraph %))) val) (:second-outline current-essay))
