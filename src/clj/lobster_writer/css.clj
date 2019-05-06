@@ -5,6 +5,7 @@
   [:.quill {:display "contents"}]
   [:.ql-toolbar {:min-height "40px"}]
   [:.ql-editor {:min-height "180px"
-                :width "550px"
+                :width      "550px"
                 :overflow-y "scroll"
-                :overflow-x "hidden"}])
+                :overflow-x "hidden"}]
+  [:.fix-size {:flex "1 !important"}])

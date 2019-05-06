@@ -336,6 +336,7 @@
                                                    [:a {:href (when enabled (utils/step-url (:id current-essay) %))}
                                                     (utils/displayable-step-name %)]])))]]]
                :panel-2 [v-box
+                         :class "fix-size"
                          :children [[title :level :level3 :underline? true :label (utils/displayable-step-name page)]
                                     [gap :size "10px"]
                                     [page-component current-essay]]]]]])
