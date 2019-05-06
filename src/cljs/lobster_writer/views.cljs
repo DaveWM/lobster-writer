@@ -108,9 +108,12 @@
      :children [[p "It's now time to write the outline of your essay. You need to write "
                  [:b min-sentences] " headings, one per 100 words of your essay (up to 15 headings)."]
                 [gap :size "15px"]
-                [editable-list {:items (map key (:outline current-essay))
+                [editable-list {:items (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                                :label-fn :heading
                                 :on-item-added #(re-frame/dispatch [::events/outline-heading-added %])
-                                :on-item-removed #(re-frame/dispatch [::events/outline-heading-removed %])}]
+                                :on-item-removed #(re-frame/dispatch [::events/outline-heading-removed %])
+                                :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
+                                :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
                 [gap :size "5px"]
                 [p "You have written " [:b (count (:outline current-essay))] " headings out of " [:b min-sentences] "."]
                 [gap :size "15px"]
@@ -125,13 +128,13 @@
   [v-box
    :children (concat [[p "Aim to write about " [:b "10 to 15"] " sentences per outline heading."
                        "You can write more or less if you want."]]
-                     (->> (:outline current-essay)
-                          (mapcat (fn [[heading section]]
-                                    [[title :level :level3 :label heading]
+                     (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                          (mapcat (fn [section]
+                                    [[title :level :level3 :label (:heading section)]
                                      [input-textarea
                                       :model (:v1 (:paragraph section))
                                       :change-on-blur? false
-                                      :on-change #(re-frame/dispatch [::events/outline-paragraph-updated heading %])
+                                      :on-change #(re-frame/dispatch [::events/outline-paragraph-updated (:heading section) %])
                                       :rows 8
                                       :width "650px"]
                                      [p "You have written "
@@ -162,10 +165,10 @@
                        "Re-write all the sentences you wrote in the previous step. "
                        "If you can't improve on a sentence, just copy and paste it into the input box."
                        "If you want to completely remove a sentence, leave the input box blank."]]
-                     (->> (:outline current-essay)
-                          (map (fn [[heading section]]
+                     (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                          (map (fn [section]
                                  [v-box
-                                  :children [[title :level :level3 :label heading]
+                                  :children [[title :level :level3 :label (:heading section)]
                                              (->> (get-in section [:sentences :v1])
                                                   (map-indexed (fn [idx v1]
                                                                  [idx v1 (get-in section [:sentences :v2 idx])]))
@@ -175,7 +178,7 @@
                                                               :rows 2
                                                               :width "650px"
                                                               :model v2
-                                                              :on-change #(re-frame/dispatch [::events/sentence-rewritten heading idx %])]
+                                                              :on-change #(re-frame/dispatch [::events/sentence-rewritten (:heading section) idx %])]
                                                              [gap :size "5px"]])))]])))
                      [[p
                        "You have written "
@@ -200,14 +203,14 @@
 (defn reorder-sentences [current-essay]
   [v-box
    :children (concat [[p "Try re-ordering the sentences within each paragraph."]]
-                     (->> (:outline current-essay)
-                          (map (fn [[heading section]]
+                     (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                          (map (fn [section]
                                  [v-box
-                                  :children [[title :level :level3 :label heading]
+                                  :children [[title :level :level3 :label (:heading section)]
                                              [p (get-in section [:paragraph :v2])]
                                              [editable-list {:items (get-in section [:sentences :v2])
-                                                             :on-item-moved-up #(re-frame/dispatch [::events/sentence-moved-up heading %])
-                                                             :on-item-moved-down #(re-frame/dispatch [::events/sentence-moved-down heading %])}]]])))
+                                                             :on-item-moved-up #(re-frame/dispatch [::events/sentence-moved-up (:heading section) %])
+                                                             :on-item-moved-down #(re-frame/dispatch [::events/sentence-moved-down (:heading section) %])}]]])))
                      [[gap :size "15px"]
                       [button
                        :class "btn-primary"
