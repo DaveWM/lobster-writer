@@ -57,7 +57,8 @@
   [interceptors/persist-app-db]
   (fn-traced [{:keys [db]} [_ essay-id]]
     (let [selected-essay (get-in db [:essays essay-id])]
-      {::effects/navigate {:url (utils/step-url essay-id (:current-step selected-essay))}})))
+      {::effects/navigate {:url (utils/step-url essay-id (:current-step selected-essay))}
+       :db db})))
 
 
 (rf/reg-event-db
