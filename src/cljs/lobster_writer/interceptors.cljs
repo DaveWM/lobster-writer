@@ -7,4 +7,4 @@
     :after  (fn [context]
                (let [db (get-in context [:effects :db])]
                  (js/localStorage.setItem constants/local-storage-app-db-key (prn-str db))
-                 context))))
+                 (assoc-in context [:effects :lobster-writer.effects/show-saving-indicator] true)))))

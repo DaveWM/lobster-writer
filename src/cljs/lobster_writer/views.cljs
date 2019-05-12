@@ -8,7 +8,7 @@
     [lobster-writer.constants :as constants]
     [lobster-writer.styles :as styles]
     [lobster-writer.components.helpers :refer [essay-display]]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box scroller]]
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box scroller md-icon-button]]
     [clojure.string :as s]
     [reagent.core :as r]
     [cljsjs.prop-types]
@@ -387,4 +387,6 @@
                  :align :center]
                 [line]
                 [gap :size "15px"]
-                [pages @*active-page]]]))
+                [pages @*active-page]
+                [:div#saving-indicator
+                 [md-icon-button :md-icon-name "zmdi-floppy" :size :larger]]]]))
