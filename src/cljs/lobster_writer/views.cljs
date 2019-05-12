@@ -12,7 +12,9 @@
     [clojure.string :as s]
     [reagent.core :as r]
     [cljsjs.prop-types]
-    [cljsjs.react-quill]))
+    [cljsjs.react-quill]
+    [cljs-time.format :as tf]
+    [cljs-time.coerce :as tc]))
 
 
 (def quill (r/adapt-react-class js/ReactQuill))
@@ -371,7 +373,8 @@
 
 
 (defn main-panel []
-  (let [*active-page (re-frame/subscribe [::subs/active-page])]
+  (let [*active-page (re-frame/subscribe [::subs/active-page])
+        *last-saved (re-frame/subscribe [::subs/last-saved])]
     [v-box
      :padding "25px"
      :children [[h-box
@@ -383,7 +386,10 @@
                             [gap :size "20px"]
                             [hyperlink-href
                              :label "About"
-                             :href "/about"]]
+                             :href "/about"]
+                            [gap :size "0" :style {:flex "1"}]
+                            (when @*last-saved
+                              [title :level :level4 :label (str "Last Saved at: " (tf/unparse (tf/formatters :hour-minute) (tc/from-date @*last-saved)))])]
                  :align :center]
                 [line]
                 [gap :size "15px"]

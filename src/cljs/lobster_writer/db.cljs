@@ -3,4 +3,5 @@
 (def default-db
   {:active-page nil
    :current-essay-id nil
-   :essays {}})
+   :essays {}
+   :last-saved nil})

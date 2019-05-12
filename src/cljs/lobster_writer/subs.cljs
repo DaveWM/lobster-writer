@@ -19,3 +19,9 @@
   ::all-essays
   (fn [db _]
     (:essays db)))
+
+
+(re-frame/reg-sub
+  ::last-saved
+  (fn [db _]
+    (:last-saved db)))
