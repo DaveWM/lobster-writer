@@ -35,8 +35,8 @@
                                 [:a.list-group-item.list-group-item-active
                                  {:href "#"
                                   :on-click (partial re-frame/dispatch [::events/essay-selected (:id %)])}
-                                 (:title %)])))]
-                [gap :size "10px"]
+                                 (:title %)])))
+                 [gap :size "10px"]]
                 [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]]]))
 
 
@@ -113,7 +113,7 @@
                 [editable-list {:items (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
                                 :label-fn :heading
                                 :on-item-added #(re-frame/dispatch [::events/outline-heading-added %])
-                                :on-item-removed #(re-frame/dispatch [::events/outline-heading-removed %])
+                                :on-item-removed #(re-frame/dispatch [::events/outline-heading-removed (:heading %)])
                                 :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
                                 :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
                 [gap :size "5px"]
