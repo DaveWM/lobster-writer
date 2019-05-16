@@ -42,14 +42,21 @@
 
 
 (defn about []
-  [v-box
+  [v-box :justify :start :align :start
    :children [[p "Lobster Writer is an application to help you write essays. It is based on the advice of Dr. Jordan Peterson in "
                [hyperlink-href :label "this essay writing guide" :href "/Jordan-Peterson-Writing-Template.docx"]
                ". According to Dr. Peterson, this method will help you \"to write an excellent essay from beginning to end\". "]
               [p
                "Lobster Writer is free (both gratis and libre) software - you can find the souce code "
                [hyperlink-href :label "here" :href "https://github.com/DaveWM/lobster-writer"]
-               "."]
+               ". If you would like to support me in developing Lobster Writer, please follow the link below."]
+              [:a.bmc-button {:target "_blank"
+                              :href "https://www.buymeacoffee.com/HOdq0AxJa"}
+               [:img {:src "https://www.buymeacoffee.com/assets/img/BMC-btn-logo.svg"
+                      :alt "Buy me a coffee"
+                      :style {:margin-left "5px"}}]
+               [:span "Buy me a coffee"]]
+              [gap :size "30px"]
               [p {:style {:font-weight "bold"}} "Lobster Writer is not associated with Dr. Peterson in any way."]]])
 
 
