@@ -14,7 +14,8 @@
                                      [:li.list-group-item.list-group-item-active
                                       [rc/h-box
                                        :justify :between
-                                       :children [[:span (label-fn item)]
+                                       :children [[:span {:style {:overflow-x "auto"}}
+                                                   (label-fn item)]
                                                   [:span
                                                    (when on-item-removed
                                                      [rc/md-icon-button
