@@ -13,6 +13,7 @@
     [reagent.core :as r]
     [cljsjs.prop-types]
     [cljsjs.react-quill]
+    [cljs-time.core :as t]
     [cljs-time.format :as tf]
     [cljs-time.coerce :as tc]))
 
@@ -389,7 +390,9 @@
                              :href "/about"]
                             [gap :size "0" :style {:flex "1"}]
                             (when @*last-saved
-                              [title :level :level4 :label (str "Last Saved at: " (tf/unparse (tf/formatters :hour-minute) (tc/from-date @*last-saved)))])]
+                              [title :level :level4 :label (str "Last Saved at: " (->> (tc/from-date @*last-saved)
+                                                                                       (t/to-default-time-zone)
+                                                                                       (tf/unparse (tf/formatters :hour-minute))))])]
                  :align :center]
                 [line]
                 [gap :size "15px"]
