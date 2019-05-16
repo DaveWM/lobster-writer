@@ -178,8 +178,8 @@
                                                   (mapcat (fn [[idx v1 v2]]
                                                             [[title :level :level4 :label v1]
                                                              [input-textarea
-                                                              :rows 2
-                                                              :width "650px"
+                                                              :rows 3
+                                                              :width "700px"
                                                               :model v2
                                                               :on-change #(re-frame/dispatch [::events/sentence-rewritten (:heading section) idx %])]
                                                              [gap :size "5px"]])))]])))
