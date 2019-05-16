@@ -211,9 +211,13 @@
                                  [v-box
                                   :children [[title :level :level3 :label (:heading section)]
                                              [p (get-in section [:paragraph :v2])]
-                                             [editable-list {:items (get-in section [:sentences :v2])
-                                                             :on-item-moved-up #(re-frame/dispatch [::events/sentence-moved-up (:heading section) %])
-                                                             :on-item-moved-down #(re-frame/dispatch [::events/sentence-moved-down (:heading section) %])}]]])))
+                                             [editable-list {:items (->> (get-in section [:sentences :v2])
+                                                                         (map-indexed vector))
+                                                             :label-fn second
+                                                             :on-item-moved-up (fn [[i _]]
+                                                                                 (re-frame/dispatch [::events/sentence-moved-up (:heading section) i]))
+                                                             :on-item-moved-down (fn [[i _]]
+                                                                                   (re-frame/dispatch [::events/sentence-moved-down (:heading section) i]))}]]])))
                      [[gap :size "15px"]
                       [button
                        :class "btn-primary"

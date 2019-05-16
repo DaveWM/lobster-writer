@@ -174,22 +174,22 @@
 (rf/reg-event-db
   ::sentence-moved-up
   [interceptors/persist-app-db]
-  (fn-traced [db [_ heading moved-sentence]]
+  (fn-traced [db [_ heading idx]]
     (-> db
         (update-in (conj (utils/current-essay-path db) :outline heading :sentences :v2)
                    (fn [sentences]
-                     (utils/move-element sentences moved-sentence -1)))
+                     (utils/swap-elements sentences idx (dec idx))))
         (update-in (conj (utils/current-essay-path db) :outline heading) #(update-paragraph-from-sentences :v2 %)))))
 
 
 (rf/reg-event-db
   ::sentence-moved-down
   [interceptors/persist-app-db]
-  (fn-traced [db [_ heading moved-sentence]]
+  (fn-traced [db [_ heading idx]]
     (-> db
         (update-in (conj (utils/current-essay-path db) :outline heading :sentences :v2)
                    (fn [sentences]
-                     (utils/move-element sentences moved-sentence 1)))
+                     (utils/swap-elements sentences idx (inc idx))))
         (update-in (conj (utils/current-essay-path db) :outline heading) #(update-paragraph-from-sentences :v2 %)))))
 
 
