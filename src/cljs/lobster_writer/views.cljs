@@ -263,7 +263,7 @@
                 [p "You have written " [:b (count (:second-outline current-essay))] " headings out of " [:b min-sentences] "."]
                 [gap :size "15px"]
                 [button
-                 :disabled? (> min-sentences (count (:second-outline current-essay)))
+                 :disabled? (zero? (count (:second-outline current-essay)))
                  :class "btn-primary"
                  :label "Next Step"
                  :on-click #(re-frame/dispatch [::events/next-step])]]]))
