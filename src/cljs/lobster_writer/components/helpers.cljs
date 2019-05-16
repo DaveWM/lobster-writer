@@ -4,10 +4,9 @@
 
 
 (defn essay-display [paragraphs]
-  [v-box
-   :style {:background-color styles/light-gray
-           :border-radius "5px"
-           :padding "10px"}
-   :children (->> paragraphs
-                  (map #(-> ^{:key %} [p {:style {:text-indent "20px"
-                                                  :width "600px"}} %])))])
+  [:div {:style {:background-color styles/light-gray
+                 :border-radius "5px"
+                 :padding "10px"
+                 :max-width "650px"}}
+   (->> paragraphs
+        (map #(-> ^{:key %} [p {:style {:text-indent "20px"}} %])))])
