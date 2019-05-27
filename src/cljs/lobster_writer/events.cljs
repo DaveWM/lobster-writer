@@ -39,16 +39,16 @@
   [(rf/inject-cofx ::coeffects/id-generator) interceptors/persist-app-db]
   (fn-traced [{:keys [db] :as cfx}]
     (let [essay-id ((::coeffects/id-generator cfx))]
-      {:db                (-> db
-                              (assoc-in [:essays essay-id] {:id               essay-id
-                                                            :title            (str "New Essay " (inc (count (:essays db))))
-                                                            :candidate-topics #{}
-                                                            :reading-list     []
-                                                            :outline          {}
-                                                            :paragraph-order  []
-                                                            :final-essay      ""
-                                                            :current-step     :candidate-topics
-                                                            :highest-step     :candidate-topics}))
+      {:db (-> db
+               (assoc-in [:essays essay-id] {:id essay-id
+                                             :title (str "New Essay " (inc (count (:essays db))))
+                                             :candidate-topics #{}
+                                             :reading-list []
+                                             :outline {}
+                                             :paragraph-order []
+                                             :final-essay ""
+                                             :current-step :candidate-topics
+                                             :highest-step :candidate-topics}))
        ::effects/navigate {:url (utils/step-url essay-id :candidate-topics)}})))
 
 
@@ -98,11 +98,11 @@
   [interceptors/persist-app-db]
   (fn-traced [{:keys [db]} _]
     (let [current-essay (get-in db (utils/current-essay-path db))
-          next-step (utils/next-step (:current-step current-essay))]
+          next-step     (utils/next-step (:current-step current-essay))]
       {::effects/navigate {:url (utils/step-url (:id current-essay) next-step)}
-       :db                (if (utils/step-after? next-step (:highest-step current-essay))
-                            (assoc-in db (conj (utils/current-essay-path db) :highest-step) next-step)
-                            db)})))
+       :db (if (utils/step-after? next-step (:highest-step current-essay))
+             (assoc-in db (conj (utils/current-essay-path db) :highest-step) next-step)
+             db)})))
 
 
 (rf/reg-event-db
@@ -128,7 +128,7 @@
     (if-not (or (s/blank? outline-heading)
                 (some? (get-in db (conj (utils/current-essay-path db) :outline outline-heading))))
       (-> db
-          (assoc-in (conj (utils/current-essay-path db) :outline outline-heading) {:heading   outline-heading
+          (assoc-in (conj (utils/current-essay-path db) :outline outline-heading) {:heading outline-heading
                                                                                    :paragraph {}
                                                                                    :sentences {:v1 []
                                                                                                :v2 []}})
@@ -217,7 +217,7 @@
   (fn-traced [db [_ outline-heading]]
     (if-not (s/blank? outline-heading)
       (-> db
-          (assoc-in (conj (utils/current-essay-path db) :second-outline outline-heading) {:heading   outline-heading
+          (assoc-in (conj (utils/current-essay-path db) :second-outline outline-heading) {:heading outline-heading
                                                                                           :paragraph nil}))
       db)))
 
@@ -252,3 +252,14 @@
     (-> db
         (assoc-in (conj (utils/current-essay-path db) :final-essay) updated-final-essay-html)
         (assoc-in (conj (utils/current-essay-path db) :final-essay-word-count) (count (utils/words updated-final-essay-text))))))
+
+
+(rf/reg-event-fx
+  ::export-requested
+  (fn-traced [{:keys [db]} [_ essay-id]]
+    (if-let [essay (get-in db [:essays essay-id])]
+      {:db db
+       ::effects/save-file {:content (prn-str essay)
+                            :name (str (:title essay) ".edn")
+                            :type "application/edn"}}
+      {:db db})))

@@ -8,7 +8,7 @@
     [lobster-writer.constants :as constants]
     [lobster-writer.styles :as styles]
     [lobster-writer.components.helpers :refer [essay-display]]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box scroller md-icon-button]]
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button]]
     [clojure.string :as s]
     [reagent.core :as r]
     [cljsjs.prop-types]
@@ -32,11 +32,19 @@
                 [:ul.list-group {:style {:max-width "500px"}}
                  (->> @*all-essays
                       (map val)
-                      (map #(-> ^{:key (:id %)}
-                                [:a.list-group-item.list-group-item-active
-                                 {:href "#"
-                                  :on-click (partial re-frame/dispatch [::events/essay-selected (:id %)])}
-                                 (:title %)])))
+                      (map (fn [essay]
+                             ^{:key (:id essay)}
+                             [:a.list-group-item.list-group-item-active
+                              {:href "#"
+                               :style {:display "flex"
+                                       :justify-content "space-between"
+                                       :align-items "center"}
+                               :on-click (partial re-frame/dispatch [::events/essay-selected (:id essay)])}
+                              (:title essay)
+                              [:span
+                               [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click (fn [evt]
+                                                                                                                                 (re-frame/dispatch [::events/export-requested (:id essay)])
+                                                                                                                                 (.stopPropagation evt))]]])))
                  [gap :size "10px"]]
                 [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]]]))
 
@@ -327,7 +335,13 @@
 
 (defn essay-step [current-essay page page-component]
   [v-box
-   :children [[title :level :level2 :underline? true :label (:title current-essay)]
+   :children [[h-box
+               :style {:margin-top "0.2em"}
+               :align :center
+               :children [[title :level :level2 :label (:title current-essay) :style {:margin-top "0.3em"}]
+                          [gap :size "20px"]
+                          [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])]]]
+              [line]
               [gap :size "12px"]
               [h-split
                :initial-split 15

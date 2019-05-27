@@ -1,6 +1,7 @@
 (ns lobster-writer.effects
   (:require [re-frame.core :as rf]
-            [lobster-writer.routes :as routes]))
+            [lobster-writer.routes :as routes]
+            [cljsjs.filesaverjs]))
 
 (rf/reg-fx
   ::navigate
@@ -14,3 +15,10 @@
     (let [elem (.getElementById js/document "saving-indicator")]
       (-> elem .-classList (.remove "run-saving-animation"))
       (js/setTimeout #(-> elem .-classList (.add "run-saving-animation")) 0))))
+
+
+(rf/reg-fx
+  ::save-file
+  (fn [{:keys [content type name]}]
+    (-> (js/Blob. #js [content] #js {:type (str type ";charset=utf-8")})
+        (js/saveAs name))))

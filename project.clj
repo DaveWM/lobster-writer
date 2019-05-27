@@ -10,7 +10,8 @@
                  [re-com "2.4.0"]
                  [cljsjs/react-quill "1.1.0-0"]
                  [cljsjs/prop-types "15.6.2-0"]
-                 [com.andrewmcveigh/cljs-time "0.5.2"]]
+                 [com.andrewmcveigh/cljs-time "0.5.2"]
+                 [cljsjs/filesaverjs "1.3.3-0"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-garden "0.3.0"]]
