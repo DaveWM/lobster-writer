@@ -22,3 +22,11 @@
   (fn [{:keys [content type name]}]
     (-> (js/Blob. #js [content] #js {:type (str type ";charset=utf-8")})
         (js/saveAs name))))
+
+
+(rf/reg-fx
+  ::read-file
+  (fn [{:keys [on-success file]}]
+    (let [fr (js/FileReader.)]
+      (set! (.-onload fr) #(on-success (.-result fr)))
+      (.readAsText fr file))))

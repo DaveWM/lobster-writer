@@ -263,3 +263,17 @@
                             :name (str (:title essay) ".edn")
                             :type "application/edn"}}
       {:db db})))
+
+
+(rf/reg-event-fx
+  ::import-requested
+  (fn-traced [{:keys [db]} [_ file]]
+    {:db db
+     ::effects/read-file {:file file
+                          :on-success #(rf/dispatch [::imported-file-read %])}}))
+
+(rf/reg-event-db
+  ::imported-file-read
+  (fn-traced [db [_ content]]
+    (when-let [imported-essay (cljs.reader/read-string content)]
+      (assoc-in db [:essays (:id imported-essay)] imported-essay))))

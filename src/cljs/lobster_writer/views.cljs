@@ -15,7 +15,8 @@
     [cljsjs.react-quill]
     [cljs-time.core :as t]
     [cljs-time.format :as tf]
-    [cljs-time.coerce :as tc]))
+    [cljs-time.coerce :as tc]
+    [lobster-writer.components.file-chooser :refer [file-chooser]]))
 
 
 (def quill (r/adapt-react-class js/ReactQuill))
@@ -46,7 +47,12 @@
                                                                                                                                  (re-frame/dispatch [::events/export-requested (:id essay)])
                                                                                                                                  (.stopPropagation evt))]]])))
                  [gap :size "10px"]]
-                [button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]]]))
+                [h-box
+                 :children [[button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]
+                            [gap :size "10px"]
+                            [file-chooser {:accept ".edn"
+                                           :on-change #(re-frame/dispatch [::events/import-requested %])}
+                             [:span "Import an essay " [:i.zmdi.zmdi-hc-fw-rc.zmdi-upload]]]]]]]))
 
 
 (defn about []
