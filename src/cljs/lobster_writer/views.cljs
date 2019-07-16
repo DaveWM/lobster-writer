@@ -101,6 +101,18 @@
                :on-click #(re-frame/dispatch [::events/next-step])]]])
 
 
+(defn notes [current-essay]
+  [v-box
+   :children [[p
+               "Now read through the items in your reading list, and make some notes if you wish. "
+               "One good way to make notes is to read a small section at a time, then write down what you have learned and any questions that you have. "
+               [:b "Do not"] " just copy and paste the source material."]
+              [editable-list {:items (:reading-list current-essay)}]
+              [quill {:default-value (:notes current-essay)
+                      :on-change (fn [html _ _ editor]
+                                   (re-frame/dispatch [::events/notes-updated html (.call (aget editor "getText"))]))}]]])
+
+
 (defn topic-choice [current-essay]
   [v-box
    :children [[p "You now need to choose your topic, and the length your essay will be. "]
@@ -384,6 +396,7 @@
                            :about about
                            :candidate-topics candidate-topics
                            :reading-list reading-list
+                           :reading-notes notes
                            :topic-choice topic-choice
                            :outline outline
                            :outline-paragraphs outline-paragraphs
@@ -406,7 +419,7 @@
 
 (defn main-panel []
   (let [*active-page (re-frame/subscribe [::subs/active-page])
-        *last-saved (re-frame/subscribe [::subs/last-saved])]
+        *last-saved  (re-frame/subscribe [::subs/last-saved])]
     [v-box
      :padding "25px"
      :children [[h-box

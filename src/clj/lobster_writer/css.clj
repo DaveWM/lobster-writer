@@ -3,10 +3,9 @@
             [garden.stylesheet :refer [at-keyframes]]))
 
 (defstyles screen
-  [:.quill {:display "contents"}]
+  [:.quill {:width "600px"}]
   [:.ql-toolbar {:min-height "40px"}]
   [:.ql-editor {:min-height "180px"
-                :width      "550px"
                 :overflow-y "scroll"
                 :overflow-x "hidden"}]
   [:.fix-size {:flex "1 !important"}]

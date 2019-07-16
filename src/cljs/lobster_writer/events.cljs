@@ -44,6 +44,7 @@
                                              :title (str "New Essay " (inc (count (:essays db))))
                                              :candidate-topics #{}
                                              :reading-list []
+                                             :notes ""
                                              :outline {}
                                              :paragraph-order []
                                              :final-essay ""
@@ -91,6 +92,13 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ reading-list-item]]
     (update-in db (conj (utils/current-essay-path db) :reading-list) #(remove (partial = reading-list-item) %))))
+
+
+(rf/reg-event-db
+  ::notes-updated
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ new-notes]]
+    (assoc-in db (conj (utils/current-essay-path db) :notes) new-notes)))
 
 
 (rf/reg-event-fx
