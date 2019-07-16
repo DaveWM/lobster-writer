@@ -17,4 +17,6 @@
   [:#saving-indicator {:position "fixed"
                        :right "60px"
                        :bottom "20px"
-                       :opacity "0"}])
+                       :opacity "0"}]
+  [:.progress {:margin-bottom "0 !important"}]
+  [:.rc-progress-bar-wrapper {:width "100%"}])

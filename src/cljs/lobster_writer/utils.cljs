@@ -17,6 +17,11 @@
   (> (.indexOf constants/steps step1)
      (.indexOf constants/steps step2)))
 
+(defn percentage-complete [current-step]
+  (let [step-idx (.indexOf constants/steps current-step)]
+    (-> (* 100 (/ (inc step-idx) (count constants/steps)))
+        (js/Math.floor))))
+
 (defn parse-int [s]
   (let [i (js/parseInt s)]
     (when (int? i)

@@ -8,7 +8,7 @@
     [lobster-writer.constants :as constants]
     [lobster-writer.styles :as styles]
     [lobster-writer.components.helpers :refer [essay-display]]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button]]
+    [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button]]
     [clojure.string :as s]
     [reagent.core :as r]
     [cljsjs.prop-types]
@@ -42,7 +42,16 @@
                                        :justify-content "space-between"
                                        :align-items "center"}
                                :on-click (partial re-frame/dispatch [::events/essay-selected (:id essay)])}
-                              (:title essay)
+                              [v-box
+                               :style {:flex "1"}
+                               :justify :start
+                               :align :start
+                               :children [[title
+                                           :label (:title essay)
+                                           :level :level3]
+                                          [progress-bar
+                                           :model (utils/percentage-complete (:highest-step essay))]]]
+                              [gap :size "30px"]
                               [:span
                                [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click (fn [evt]
                                                                                                                                  (re-frame/dispatch [::events/export-requested (:id essay)])
