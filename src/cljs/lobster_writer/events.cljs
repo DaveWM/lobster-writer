@@ -102,6 +102,16 @@
 
 
 (rf/reg-event-fx
+  ::view-notes-requested
+  [interceptors/persist-app-db]
+  (fn-traced [{:keys [db]} [_ essay-id]]
+    (let [{:keys [title notes]} (get-in db [:essays essay-id])]
+      {:db db
+       ::effects/open-dialog {:title (str "Notes: " title)
+                              :body notes}})))
+
+
+(rf/reg-event-fx
   ::next-step
   [interceptors/persist-app-db]
   (fn-traced [{:keys [db]} _]

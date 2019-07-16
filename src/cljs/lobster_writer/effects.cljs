@@ -30,3 +30,18 @@
     (let [fr (js/FileReader.)]
       (set! (.-onload fr) #(on-success (.-result fr)))
       (.readAsText fr file))))
+
+
+(rf/reg-fx
+  ::open-dialog
+  (fn [{:keys [title body]}]
+    (let [dialog (js/window.open "" title "height=600,width=800,toolbar=no,personalbar=no")]
+      (do (-> dialog
+              (.-document)
+              (.-body)
+              (.-innerHTML)
+              (set! body))
+          (-> dialog
+              (.-document)
+              (.-title)
+              (set! title))))))

@@ -8,7 +8,7 @@
     [lobster-writer.constants :as constants]
     [lobster-writer.styles :as styles]
     [lobster-writer.components.helpers :refer [essay-display]]
-    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button]]
+    [re-com.core :refer [button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button]]
     [clojure.string :as s]
     [reagent.core :as r]
     [cljsjs.prop-types]
@@ -16,7 +16,8 @@
     [cljs-time.core :as t]
     [cljs-time.format :as tf]
     [cljs-time.coerce :as tc]
-    [lobster-writer.components.file-chooser :refer [file-chooser]]))
+    [lobster-writer.components.file-chooser :refer [file-chooser]]
+    [clojure.string :as str]))
 
 
 (def quill (r/adapt-react-class js/ReactQuill))
@@ -163,7 +164,8 @@
 (defn outline-paragraphs [current-essay]
   [v-box
    :children (concat [[p "Aim to write about " [:b "10 to 15"] " sentences per outline heading."
-                       "You can write more or less if you want."]]
+                       "You can write more or less if you want."]
+                      [p "To review your notes, " [hyperlink :label "click here." :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])]]]
                      (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
                           (mapcat (fn [section]
                                     [[title :level :level3 :label (:heading section)]
@@ -338,9 +340,7 @@
                        "You can now format your final essay, and add citations if you wish. "
                        "Your reading list is displayed below for you to copy citations from. "
                        "When you've completed the essay, you can copy and paste it into a Word doc or Google doc."]
-                      [title :level :level3 :label "Reading List"]
-                      [editable-list {:items (:reading-list current-essay)}]
-                      [title :level :level3 :label "Final Essay"]
+                      [p "To review your notes, " [hyperlink :label "click here." :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])]]
                       [quill {:default-value (:final-essay current-essay)
                               :on-change (fn [html _ _ editor]
                                            (re-frame/dispatch [::events/final-essay-updated html (.call (aget editor "getText"))]))}]
@@ -358,7 +358,9 @@
                :align :center
                :children [[title :level :level2 :label (:title current-essay) :style {:margin-top "0.3em"}]
                           [gap :size "20px"]
-                          [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])]]]
+                          [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])]
+                          (when-not (str/blank? (:notes current-essay))
+                            [md-circle-icon-button :md-icon-name "zmdi-file-text" :tooltip "View Notes" :size :smaller :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])])]]
               [line]
               [gap :size "12px"]
               [h-split
