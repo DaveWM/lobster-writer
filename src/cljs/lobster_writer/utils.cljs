@@ -62,3 +62,13 @@
    If places is positive, moves the element forwards, else backwards."
   (let [idx (.indexOf xs x)]
     (swap-elements xs idx (+ idx places))))
+
+
+(defn highlight-links [text highlight-fn]
+  "Detects and highlights the links in the given text. Returns a vector, where the urls have been run through highlight-fn."
+  (let [url-regex #"(https?://[^\s]+)"]
+    (->> (s/split text url-regex)
+         (map (fn [x]
+                (if (re-matches url-regex x)
+                  (highlight-fn x)
+                  x))))))

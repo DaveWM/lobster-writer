@@ -1,6 +1,7 @@
 (ns lobster-writer.components.editable-list
   (:require [re-com.core :as rc]
-            [reagent.core :as reagent]))
+            [reagent.core :as reagent]
+            [lobster-writer.utils :as utils]))
 
 
 (defn editable-list [{:keys [on-item-added on-item-removed on-item-moved-up on-item-moved-down label-fn items]
@@ -15,7 +16,12 @@
                                       [rc/h-box
                                        :justify :between
                                        :children [[:span {:style {:overflow-x "auto"}}
-                                                   (label-fn item)]
+                                                   (-> (label-fn item)
+                                                       (utils/highlight-links (fn [url]
+                                                                                [rc/hyperlink-href
+                                                                                 :href url
+                                                                                 :label url
+                                                                                 :target "_blank"])))]
                                                   [:span
                                                    (when on-item-removed
                                                      [rc/md-icon-button
