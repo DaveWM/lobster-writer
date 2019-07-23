@@ -120,7 +120,12 @@
               [editable-list {:items (:reading-list current-essay)}]
               [quill {:default-value (:notes current-essay)
                       :on-change (fn [html _ _ editor]
-                                   (re-frame/dispatch [::events/notes-updated html (.call (aget editor "getText"))]))}]]])
+                                   (re-frame/dispatch [::events/notes-updated html (.call (aget editor "getText"))]))}]
+              [gap :size "15px"]
+              [button
+               :class "btn-primary"
+               :label "Next Step"
+               :on-click #(re-frame/dispatch [::events/next-step])]]])
 
 
 (defn topic-choice [current-essay]
