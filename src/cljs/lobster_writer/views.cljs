@@ -105,26 +105,16 @@
               [editable-list {:items (:reading-list current-essay)
                               :on-item-added #(re-frame/dispatch [::events/reading-list-item-added %])
                               :on-item-removed #(re-frame/dispatch [::events/reading-list-item-removed %])}]
-              [gap :size "15px"]
-              [button
-               :disabled? (empty? (:reading-list current-essay)) :class "btn-primary" :label "Next Step"
-               :on-click #(re-frame/dispatch [::events/next-step])]]])
-
-
-(defn notes [current-essay]
-  [v-box
-   :children [[p
-               "Now read through the items in your reading list, and make some notes if you wish. "
-               "One good way to make notes is to read a small section at a time, then write down what you have learned and any questions that you have. "
-               [:b "Do not"] " just copy and paste the source material."]
-              [editable-list {:items (:reading-list current-essay)}]
+              [gap :size "20px"]
+              [p
+               "You can also make some notes if you want. "
+               "One good way to make notes is to read a small section at a time, then write down what you have learned and any questions that you have. "]
               [quill {:default-value (:notes current-essay)
                       :on-change (fn [html _ _ editor]
                                    (re-frame/dispatch [::events/notes-updated html (.call (aget editor "getText"))]))}]
               [gap :size "15px"]
               [button
-               :class "btn-primary"
-               :label "Next Step"
+               :disabled? (empty? (:reading-list current-essay)) :class "btn-primary" :label "Next Step"
                :on-click #(re-frame/dispatch [::events/next-step])]]])
 
 
@@ -412,7 +402,6 @@
                            :about about
                            :candidate-topics candidate-topics
                            :reading-list reading-list
-                           :reading-notes notes
                            :topic-choice topic-choice
                            :outline outline
                            :outline-paragraphs outline-paragraphs

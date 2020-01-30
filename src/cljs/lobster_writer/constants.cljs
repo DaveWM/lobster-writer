@@ -5,7 +5,6 @@
 (def steps
   [:candidate-topics
    :reading-list
-   :reading-notes
    :topic-choice
    :outline
    :outline-paragraphs

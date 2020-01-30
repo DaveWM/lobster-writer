@@ -4,4 +4,5 @@
   {:active-page nil
    :current-essay-id nil
    :essays {}
-   :last-saved nil})
+   :last-saved nil
+   ::version 1})
