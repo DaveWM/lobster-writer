@@ -391,31 +391,33 @@
                             [md-circle-icon-button :md-icon-name "zmdi-file-text" :tooltip "View Notes" :size :smaller :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])])]]
               [line]
               [gap :size "12px"]
-              [h-split
-               :initial-split 15
-               :splitter-size "12px"
-               :panel-1 [v-box
-                         :size "1"
-                         :style {:background-color styles/light-gray
-                                 :padding "20px"
-                                 :border-radius "8px"}
-                         :children [[title :level :level3 :label "Essay Steps"]
-                                    [gap :size "5px"]
-                                    [:ul.nav.nav-pills.nav-stacked
-                                     (->> constants/steps
-                                          (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
-                                                  ^{:key %}
-                                                  [:li.nav-item {:class (str (when (= (:current-step current-essay) %)
-                                                                               "active ")
-                                                                             (when-not enabled
-                                                                               "disabled "))}
-                                                   [:a {:href (when enabled (utils/step-url (:id current-essay) %))}
-                                                    (utils/displayable-step-name %)]])))]]]
-               :panel-2 [v-box
-                         :class "fix-size"
-                         :children [[title :level :level3 :underline? true :label (utils/displayable-step-name page)]
-                                    [gap :size "10px"]
-                                    [page-component current-essay]]]]]])
+              [:div.lw-container
+               [h-split
+                :initial-split 18
+                :splitter-size "12px"
+                :margin "0px"
+                :panel-1 [v-box
+                          :size "1"
+                          :style {:background-color styles/light-gray
+                                  :padding "20px"
+                                  :border-radius "8px"}
+                          :children [[title :level :level3 :label "Essay Steps"]
+                                     [gap :size "5px"]
+                                     [:ul.nav.nav-pills.nav-stacked
+                                      (->> constants/steps
+                                           (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
+                                                   ^{:key %}
+                                                   [:li.nav-item {:class (str (when (= (:current-step current-essay) %)
+                                                                                "active ")
+                                                                              (when-not enabled
+                                                                                "disabled "))}
+                                                    [:a {:href (when enabled (utils/step-url (:id current-essay) %))}
+                                                     (utils/displayable-step-name %)]])))]]]
+                :panel-2 [v-box
+                          :class "fix-size"
+                          :children [[title :level :level3 :underline? true :label (utils/displayable-step-name page)]
+                                     [gap :size "10px"]
+                                     [page-component current-essay]]]]]]])
 
 (defn not-found []
   [p "Route not found!"])

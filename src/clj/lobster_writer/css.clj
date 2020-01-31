@@ -19,4 +19,7 @@
                        :bottom "20px"
                        :opacity "0"}]
   [:.progress {:margin-bottom "0 !important"}]
-  [:.rc-progress-bar-wrapper {:width "100%"}])
+  [:.rc-progress-bar-wrapper {:width "100%"}]
+  [:.lw-container {:max-width "1000px"
+                   :width "100%"
+                   :align-self "center"}])
