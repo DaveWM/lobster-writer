@@ -45,3 +45,10 @@
               (.-document)
               (.-title)
               (set! title))))))
+
+(rf/reg-fx
+ ::open-external-url
+ (fn [{:keys [url new-tab]}]
+   (if new-tab
+     (js/window.open url)
+     (set! js/window.location.href url))))

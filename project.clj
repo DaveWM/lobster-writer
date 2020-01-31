@@ -11,7 +11,8 @@
                  [cljsjs/react-quill "1.1.0-0"]
                  [cljsjs/prop-types "15.6.2-0"]
                  [com.andrewmcveigh/cljs-time "0.5.2"]
-                 [cljsjs/filesaverjs "1.3.3-0"]]
+                 [cljsjs/filesaverjs "1.3.3-0"]
+                 [com.cemerick/url "0.1.1"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-garden "0.3.0"]]

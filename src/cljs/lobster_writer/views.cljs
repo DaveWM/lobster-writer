@@ -1,23 +1,23 @@
 (ns lobster-writer.views
   (:require
-    [re-frame.core :as re-frame]
-    [lobster-writer.subs :as subs]
-    [lobster-writer.events :as events]
-    [lobster-writer.components.editable-list :refer [editable-list]]
-    [lobster-writer.utils :as utils]
-    [lobster-writer.constants :as constants]
-    [lobster-writer.styles :as styles]
-    [lobster-writer.components.helpers :refer [essay-display]]
-    [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button]]
-    [clojure.string :as s]
-    [reagent.core :as r]
-    [cljsjs.prop-types]
-    [cljsjs.react-quill]
-    [cljs-time.core :as t]
-    [cljs-time.format :as tf]
-    [cljs-time.coerce :as tc]
-    [lobster-writer.components.file-chooser :refer [file-chooser]]
-    [clojure.string :as str]))
+   [re-frame.core :as re-frame]
+   [lobster-writer.subs :as subs]
+   [lobster-writer.events :as events]
+   [lobster-writer.components.editable-list :refer [editable-list]]
+   [lobster-writer.utils :as utils]
+   [lobster-writer.constants :as constants]
+   [lobster-writer.styles :as styles]
+   [lobster-writer.components.helpers :refer [essay-display]]
+   [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button radio-button]]
+   [clojure.string :as s]
+   [reagent.core :as r]
+   [cljsjs.prop-types]
+   [cljsjs.react-quill]
+   [cljs-time.core :as t]
+   [cljs-time.format :as tf]
+   [cljs-time.coerce :as tc]
+   [lobster-writer.components.file-chooser :refer [file-chooser]]
+   [clojure.string :as str]))
 
 
 (def quill (r/adapt-react-class js/ReactQuill))
@@ -109,9 +109,32 @@
               [p
                "You can also make some notes if you want. "
                "One good way to make notes is to read a small section at a time, then write down what you have learned and any questions that you have. "]
-              [quill {:default-value (:notes current-essay)
-                      :on-change (fn [html _ _ editor]
-                                   (re-frame/dispatch [::events/notes-updated html (.call (aget editor "getText"))]))}]
+              [p
+               "Where do you want to store the notes?"]
+              [h-box
+               :children [[gap :size "25px"]
+                          [radio-button
+                           :model (:notes-type current-essay)
+                           :value :in-app
+                           :label "here"
+                           :on-change (fn [v]
+                                        (re-frame/dispatch [::events/notes-type-updated v]))]
+                          [gap :size "15px"]
+                          [radio-button
+                           :model (:notes-type current-essay)
+                           :value :external
+                           :label "in another app"
+                           :on-change (fn [v]
+                                        (re-frame/dispatch [::events/notes-type-updated v]))]]]
+              [gap :size "15px"]
+              (if (= (:notes-type current-essay) :in-app)
+                [quill {:default-value (:notes current-essay)
+                        :on-change (fn [html _ _ editor]
+                                     (re-frame/dispatch [::events/in-app-notes-updated html (.call (aget editor "getText"))]))}]
+                [input-text
+                 :model (:external-notes-url current-essay)
+                 :on-change #(re-frame/dispatch [::events/external-notes-url-updated %])
+                 :placeholder "Enter the URL of your notes here"])
               [gap :size "15px"]
               [button
                :disabled? (empty? (:reading-list current-essay)) :class "btn-primary" :label "Next Step"
@@ -363,7 +386,8 @@
                :children [[title :level :level2 :label (:title current-essay) :style {:margin-top "0.3em"}]
                           [gap :size "20px"]
                           [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])]
-                          (when-not (str/blank? (:notes current-essay))
+                          (when-not (or (and (= (:notes-type current-essay) :in-app) (str/blank? (:notes current-essay)))
+                                        (and (= (:notes-type current-essay) :external) (str/blank? (:external-notes-url current-essay))))
                             [md-circle-icon-button :md-icon-name "zmdi-file-text" :tooltip "View Notes" :size :smaller :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])])]]
               [line]
               [gap :size "12px"]

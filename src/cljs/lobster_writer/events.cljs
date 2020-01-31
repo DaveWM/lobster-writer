@@ -1,13 +1,14 @@
 (ns lobster-writer.events
   (:require
-    [re-frame.core :as rf]
-    [lobster-writer.db :as db]
-    [lobster-writer.effects :as effects]
-    [lobster-writer.coeffects :as coeffects]
-    [lobster-writer.utils :as utils]
-    [lobster-writer.interceptors :as interceptors]
-    [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
-    [clojure.string :as s]))
+   [re-frame.core :as rf]
+   [lobster-writer.db :as db]
+   [lobster-writer.effects :as effects]
+   [lobster-writer.coeffects :as coeffects]
+   [lobster-writer.utils :as utils]
+   [lobster-writer.interceptors :as interceptors]
+   [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
+   [clojure.string :as s]
+   [cemerick.url :as url]))
 
 
 (defn update-paragraph-from-sentences [version section]
@@ -44,7 +45,9 @@
                                              :title (str "New Essay " (inc (count (:essays db))))
                                              :candidate-topics #{}
                                              :reading-list []
+                                             :notes-type :in-app
                                              :notes ""
+                                             :external-notes-url nil
                                              :outline {}
                                              :paragraph-order []
                                              :final-essay ""
@@ -88,27 +91,50 @@
 
 
 (rf/reg-event-db
-  ::reading-list-item-removed
-  [interceptors/persist-app-db]
-  (fn-traced [db [_ reading-list-item]]
-    (update-in db (conj (utils/current-essay-path db) :reading-list) #(remove (partial = reading-list-item) %))))
+ ::reading-list-item-removed
+ [interceptors/persist-app-db]
+ (fn-traced [db [_ reading-list-item]]
+   (update-in db (conj (utils/current-essay-path db) :reading-list) #(remove (partial = reading-list-item) %))))
 
 
 (rf/reg-event-db
-  ::notes-updated
-  [interceptors/persist-app-db]
-  (fn-traced [db [_ new-notes]]
-    (assoc-in db (conj (utils/current-essay-path db) :notes) new-notes)))
+ ::in-app-notes-updated
+ [interceptors/persist-app-db]
+ (fn-traced [db [_ new-notes]]
+   (assoc-in db (conj (utils/current-essay-path db) :notes) new-notes)))
+
+
+(rf/reg-event-db
+ ::external-notes-url-updated
+ [interceptors/persist-app-db]
+ (fn-traced [db [_ notes-url-str]]
+   (let [notes-url (as-> (url/url notes-url-str) $
+                         (assoc $ :protocol (if (s/blank? (:protocol $)) "http" (:protocol $))))]
+     (assoc-in db
+               (conj (utils/current-essay-path db) :external-notes-url)
+               (if (s/blank? notes-url-str)
+                 nil
+                 (str notes-url))))))
+
+
+(rf/reg-event-db
+ ::notes-type-updated
+ [interceptors/persist-app-db]
+ (fn-traced [db [_ notes-type]]
+   (assoc-in db (conj (utils/current-essay-path db) :notes-type) notes-type)))
 
 
 (rf/reg-event-fx
-  ::view-notes-requested
-  [interceptors/persist-app-db]
-  (fn-traced [{:keys [db]} [_ essay-id]]
-    (let [{:keys [title notes]} (get-in db [:essays essay-id])]
-      {:db db
-       ::effects/open-dialog {:title (str "Notes: " title)
-                              :body notes}})))
+ ::view-notes-requested
+ [interceptors/persist-app-db]
+ (fn-traced [{:keys [db]} [_ essay-id]]
+   (let [{:keys [title notes notes-type external-notes-url]} (get-in db [:essays essay-id])]
+     (merge {:db db}
+            (if (= notes-type :in-app)
+              {::effects/open-dialog {:title (str "Notes: " title)
+                                      :body notes}}
+              {::effects/open-external-url {:url external-notes-url
+                                            :new-tab true}})))))
 
 
 (rf/reg-event-fx
