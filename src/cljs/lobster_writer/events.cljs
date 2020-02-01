@@ -12,13 +12,6 @@
    [cemerick.url :as url]))
 
 
-(defn update-paragraph-from-sentences [version section]
-  (let [paragraph (->> (get-in section [:sentences version])
-                       utils/join-sentences)]
-    (-> section
-        (assoc-in [:paragraph version] paragraph))))
-
-
 (rf/reg-event-fx
   ::initialize-db
   [(rf/inject-cofx ::coeffects/persisted-app-db)]
@@ -202,7 +195,6 @@
                          vec)]
       (-> db
           (assoc-in (conj (utils/current-essay-path db) :outline heading :paragraph :v1) updated-paragraph)
-          (assoc-in (conj (utils/current-essay-path db) :outline heading :paragraph :v2) updated-paragraph)
           (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v1) sentences)
           (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v2) sentences)))))
 
@@ -212,8 +204,7 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ heading idx updated-sentence]]
     (-> db
-        (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v2 idx :value) updated-sentence)
-        (update-in (conj (utils/current-essay-path db) :outline heading) #(update-paragraph-from-sentences :v2 %)))))
+        (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v2 idx :value) updated-sentence))))
 
 
 (rf/reg-event-db
@@ -223,8 +214,7 @@
     (-> db
         (update-in (conj (utils/current-essay-path db) :outline heading :sentences :v2)
                    (fn [sentences]
-                     (utils/swap-elements sentences idx (dec idx))))
-        (update-in (conj (utils/current-essay-path db) :outline heading) #(update-paragraph-from-sentences :v2 %)))))
+                     (utils/swap-elements sentences idx (dec idx)))))))
 
 
 (rf/reg-event-db
@@ -234,8 +224,7 @@
     (-> db
         (update-in (conj (utils/current-essay-path db) :outline heading :sentences :v2)
                    (fn [sentences]
-                     (utils/swap-elements sentences idx (inc idx))))
-        (update-in (conj (utils/current-essay-path db) :outline heading) #(update-paragraph-from-sentences :v2 %)))))
+                     (utils/swap-elements sentences idx (inc idx)))))))
 
 
 (rf/reg-event-db

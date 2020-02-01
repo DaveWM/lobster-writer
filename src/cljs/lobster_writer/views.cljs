@@ -261,7 +261,7 @@
                        "You have written "
                        (->> (:outline current-essay)
                             vals
-                            (map (comp :v2 :paragraph))
+                            (map (comp utils/join-sentences :v2 :sentences))
                             (mapcat utils/words)
                             count)
                        " words, out of a target number of "
