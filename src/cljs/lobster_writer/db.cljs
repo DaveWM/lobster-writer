@@ -5,4 +5,4 @@
    :current-essay-id nil
    :essays {}
    :last-saved nil
-   ::version 1})
+   ::version 2})

@@ -2,6 +2,8 @@
   (:require [garden.def :refer [defstyles]]
             [garden.stylesheet :refer [at-keyframes]]))
 
+(def light-gray "#e1e8f0")
+
 (defstyles screen
   [:.quill {:width "600px"}]
   [:.ql-toolbar {:min-height "40px"}]
@@ -22,4 +24,16 @@
   [:.rc-progress-bar-wrapper {:width "100%"}]
   [:.lw-container {:max-width "1000px"
                    :width "100%"
-                   :align-self "center"}])
+                   :align-self "center"
+                   :postition "inherit"}]
+  [:.essay-display {:border "1px solid black"
+                    :border-radius "8px"
+                    :padding "15px"
+                    :max-width "650px"}
+   [:&__section {:margin-bottom "25px"}
+    [:&:last-child {:margin-bottom "0"}]]
+   [:&__sentence {:text-indent "20px"}]
+   [:&__code {:margin-left "20px"}]]
+  [:.sidebar {:background-color light-gray
+              :padding "20px"
+              :border-radius "8px"}])

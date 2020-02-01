@@ -38,14 +38,36 @@
 
 (defn sentences [text]
   (when text
-    (vec (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (s/trim text)))))
+    (let [chunks (->> (s/split (s/trim text) #"```")
+                      (map (fn [type v] {:type type
+                                         :value (s/trim v)})
+                           (cycle [:text :code]))
+                      (remove #(s/blank? (:value %))))]
+      (->> chunks
+           (mapcat (fn [chunk]
+                     (if (= (:type chunk) :text)
+                       (->> (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (:value chunk))
+                            (map #(-> {:type :sentence :value %})))
+                       [chunk])))
+           vec))))
 
 (defn words [text]
   (when text
     (vec (re-seq #"[^\s]+" (s/trim text)))))
 
-(defn join-sentences [sentences]
-  (s/join " " sentences))
+(defn mask-code [{:keys [type] :as chunk}]
+  (if (= type :code)
+    (assoc chunk :value " <<code block>> ")
+    chunk))
+
+(defn join-sentences
+  [sentences]
+  (->> sentences
+       (map (fn [{:keys [type value]}]
+              (if (= type :code)
+                (str "\n\n" value "\n\n")
+                value)))
+       (s/join " ")))
 
 
 (defn ordered-by [m ordering]
@@ -77,3 +99,10 @@
                 (if (re-matches url-regex x)
                   (highlight-fn x)
                   x))))))
+
+
+(defn map-vals [f m]
+  (->> m
+       (map (fn [[k v]]
+              [k (f v)]))
+       (into (empty m))))

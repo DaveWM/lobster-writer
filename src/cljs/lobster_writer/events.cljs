@@ -6,6 +6,7 @@
    [lobster-writer.coeffects :as coeffects]
    [lobster-writer.utils :as utils]
    [lobster-writer.interceptors :as interceptors]
+   [lobster-writer.migrations :as migrations]
    [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
    [clojure.string :as s]
    [cemerick.url :as url]))
@@ -22,7 +23,7 @@
   ::initialize-db
   [(rf/inject-cofx ::coeffects/persisted-app-db)]
   (fn-traced [coeffects _]
-    {:db (or (::coeffects/persisted-app-db coeffects) db/default-db)}))
+    {:db (or (migrations/migrate (::coeffects/persisted-app-db coeffects)) db/default-db)}))
 
 (rf/reg-event-db
   ::set-active-page
@@ -211,7 +212,7 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ heading idx updated-sentence]]
     (-> db
-        (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v2 idx) updated-sentence)
+        (assoc-in (conj (utils/current-essay-path db) :outline heading :sentences :v2 idx :value) updated-sentence)
         (update-in (conj (utils/current-essay-path db) :outline heading) #(update-paragraph-from-sentences :v2 %)))))
 
 
@@ -284,8 +285,7 @@
                                                    (let [final-essay (->> (:second-outline current-essay)
                                                                           vals
                                                                           (map :paragraph)
-                                                                          (map #(str "<p>     " % "</p><br/>"))
-                                                                          (clojure.string/join))]
+                                                                          (clojure.string/join "<br/>"))]
                                                      (assoc current-essay :final-essay final-essay)))))))
 
 
