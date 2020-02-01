@@ -309,4 +309,4 @@
   ::imported-file-read
   (fn-traced [db [_ content]]
     (when-let [imported-essay (cljs.reader/read-string content)]
-      (assoc-in db [:essays (:id imported-essay)] imported-essay))))
+      (assoc-in db [:essays (:id imported-essay)] (migrations/migrate imported-essay)))))
