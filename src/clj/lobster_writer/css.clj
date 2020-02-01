@@ -5,11 +5,17 @@
 (def light-gray "#e1e8f0")
 
 (defstyles screen
-  [:.quill {:width "600px"}]
+  [:.quill {:width "600px"
+            :min-height "250px"
+            :display "flex"
+            :flex-direction "column"}]
   [:.ql-toolbar {:min-height "40px"}]
-  [:.ql-editor {:min-height "180px"
+  [:.ql-editor {:flex 1
                 :overflow-y "scroll"
                 :overflow-x "hidden"}]
+  [:.ql-container {:flex 1
+                   :display "flex"
+                   :flex-direction "column"}]
   [:.fix-size {:flex "1 !important"}]
   (apply at-keyframes "saving-animation"
                 (->> (map vector (range 0 (inc 100) 25) (cycle [0 1]))
@@ -24,8 +30,7 @@
   [:.rc-progress-bar-wrapper {:width "100%"}]
   [:.lw-container {:max-width "1000px"
                    :width "100%"
-                   :align-self "center"
-                   :postition "inherit"}]
+                   :align-self "center"}]
   [:.essay-display {:border "1px solid black"
                     :border-radius "8px"
                     :padding "15px"
