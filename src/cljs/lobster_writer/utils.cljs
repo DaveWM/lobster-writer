@@ -105,4 +105,4 @@
   (->> m
        (map (fn [[k v]]
               [k (f v)]))
-       (into (empty m))))
+       (into {})))

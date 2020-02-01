@@ -16,7 +16,11 @@
   ::initialize-db
   [(rf/inject-cofx ::coeffects/persisted-app-db)]
   (fn-traced [coeffects _]
-    {:db (or (migrations/migrate (::coeffects/persisted-app-db coeffects)) db/default-db)}))
+    (let [saved-db (-> (::coeffects/persisted-app-db coeffects)
+                       (update :essays #(if (= % '())
+                                          {}
+                                          %)))]
+      {:db (or (migrations/migrate saved-db) db/default-db)})))
 
 (rf/reg-event-db
   ::set-active-page
