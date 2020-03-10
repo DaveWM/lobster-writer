@@ -488,8 +488,8 @@
                             [hyperlink-href :href "https://github.com/DaveWM/lobster-writer" :tooltip "GitHub Repo" :target "_blank"
                              :label [:i.zmdi.zmdi-hc-2x.zmdi-github]]
                             [gap :size "5px"]
-                            [hyperlink-href :href "mailto:mail@davemartin.me" :tooltip "Email Developer"
-                             :label [:i.zmdi.zmdi-hc-2x.zmdi-email]]
+                            [hyperlink-href :href "https://davemartin.me" :tooltip "About the Developer"
+                             :label [:i.zmdi.zmdi-hc-2x.zmdi-account]]
                             [gap :size "20px"]
                             (when @*last-saved
                               [title :level :level4 :label (str "Last Saved at: " (->> (tc/from-date @*last-saved)
