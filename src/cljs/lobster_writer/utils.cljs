@@ -38,7 +38,9 @@
 
 (defn sentences [text]
   (when text
-    (let [chunks (->> (s/split (s/trim text) #"```")
+    (let [acronym-regex #"(?:[a-zA-Z]\.)+[a-zA-Z]\.?"
+          acronym-replacement (str (gensym))
+          chunks (->> (s/split (s/trim text) #"```")
                       (map (fn [type v] {:type type
                                          :value (s/trim v)})
                            (cycle [:text :code]))
@@ -46,8 +48,11 @@
       (->> chunks
            (mapcat (fn [chunk]
                      (if (= (:type chunk) :text)
-                       (->> (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (:value chunk))
-                            (map #(-> {:type :sentence :value (s/trim %)})))
+                       (as-> (:value chunk) $
+                             (s/replace $ acronym-regex #(s/replace % #"\." acronym-replacement))
+                             (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" $)
+                             (map #(s/replace % (re-pattern acronym-replacement) ".") $)
+                             (map #(-> {:type :sentence :value (s/trim %)}) $))
                        [chunk])))
            vec))))
 
