@@ -152,6 +152,8 @@
 (defn topic-choice [current-essay]
   [v-box
    :children [[p "You now need to choose your topic, and the length your essay will be. "]
+              (when-not (contains? (:candidate-topics current-essay) (:title current-essay))
+                [p {:style {:font-weight "bold"}} "Please pick a topic from the below choices"])
               [:ul.list-group {:style {:max-width "500px"}}
                (->> (:candidate-topics current-essay)
                     (map #(-> [:a.list-group-item.list-group-item-active
