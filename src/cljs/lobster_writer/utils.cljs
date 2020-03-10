@@ -47,7 +47,7 @@
            (mapcat (fn [chunk]
                      (if (= (:type chunk) :text)
                        (->> (re-seq #"(?:\s|^)+[^.!?]+(?:[.!?]|$)" (:value chunk))
-                            (map #(-> {:type :sentence :value %})))
+                            (map #(-> {:type :sentence :value (s/trim %)})))
                        [chunk])))
            vec))))
 
