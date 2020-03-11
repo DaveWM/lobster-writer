@@ -117,3 +117,7 @@
     (doseq [[k v] m]
       (.append form-data (name k) (str v)))
     form-data))
+
+(defn add-alert [db id alert]
+  (-> db
+      (assoc-in [:alerts id] (assoc alert :id id))))

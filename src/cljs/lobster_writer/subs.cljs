@@ -25,3 +25,9 @@
   ::last-saved
   (fn [db _]
     (:last-saved db)))
+
+
+(re-frame/reg-sub
+ ::alerts
+ (fn [db _]
+   (vals (:alerts db))))

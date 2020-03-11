@@ -12,3 +12,9 @@
   ::persisted-app-db
   (fn [coeffects _]
     (assoc coeffects ::persisted-app-db (cljs.reader/read-string (js/localStorage.getItem constants/local-storage-app-db-key)))))
+
+
+(rf/reg-cofx
+ ::host
+ (fn [coeffects _]
+   (assoc coeffects ::host (str (.-protocol js/location) "//" (.-host js/location)))))
