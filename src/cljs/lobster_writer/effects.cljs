@@ -53,3 +53,8 @@
    (if new-tab
      (js/window.open url)
      (set! js/window.location.href url))))
+
+(rf/reg-fx
+ ::show-alert
+ (fn [{:keys [text]}]
+   (js/alert text)))

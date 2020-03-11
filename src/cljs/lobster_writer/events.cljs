@@ -338,7 +338,8 @@
                                              :api_paste_name (:title essay)
                                              :api_paste_private 1
                                              :api_paste_format "clojure"})
-                   :on-success [::remote-save-complete essay-id]}})))
+                   :on-success [::remote-save-complete essay-id]
+                   :on-failure [::remote-call-failed]}})))
 
 (rf/reg-event-db
  ::remote-save-complete
@@ -357,7 +358,8 @@
     :http-xhrio {:method :get
                  :uri (str "https://cors-anywhere.herokuapp.com/" url)
                  :response-format (ajax/text-response-format)
-                 :on-success [::remote-import-complete key url]}}))
+                 :on-success [::remote-import-complete key url]
+                 :on-failure [::remote-call-failed]}}))
 
 (rf/reg-event-db
  ::remote-import-complete
@@ -373,3 +375,9 @@
                                                      (assoc :remote-uri url
                                                             :remote-type :pastebin)
                                                      (migrations/migrate)))))))
+
+(rf/reg-event-fx
+ ::remote-call-failed
+ (fn-traced [{:keys [db]} [_ {:keys [uri debug-message status-text]}]]
+   {:db db
+    ::effects/show-alert {:text (str "Remote call failed! Please contact the developer. URL: " uri ", Error message: " (or debug-message status-text))}}))
