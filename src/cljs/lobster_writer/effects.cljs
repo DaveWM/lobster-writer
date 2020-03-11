@@ -1,7 +1,8 @@
 (ns lobster-writer.effects
   (:require [re-frame.core :as rf]
             [lobster-writer.routes :as routes]
-            [cljsjs.filesaverjs]))
+            [cljsjs.filesaverjs]
+            [day8.re-frame.http-fx]))
 
 (rf/reg-fx
   ::navigate

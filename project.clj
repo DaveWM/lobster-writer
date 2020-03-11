@@ -12,7 +12,9 @@
                  [cljsjs/prop-types "15.6.2-0"]
                  [com.andrewmcveigh/cljs-time "0.5.2"]
                  [cljsjs/filesaverjs "1.3.3-0"]
-                 [com.cemerick/url "0.1.1"]]
+                 [com.cemerick/url "0.1.1"]
+                 [day8.re-frame/http-fx "v0.2.0"]
+                 [cljsjs/crypto-js "3.1.9-1-0"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-garden "0.3.0"]]

@@ -111,3 +111,9 @@
        (map (fn [[k v]]
               [k (f v)]))
        (into {})))
+
+(defn ->form-data [m]
+  (let [form-data (js/FormData.)]
+    (doseq [[k v] m]
+      (.append form-data (name k) (str v)))
+    form-data))

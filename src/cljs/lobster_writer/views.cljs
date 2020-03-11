@@ -7,7 +7,7 @@
    [lobster-writer.utils :as utils]
    [lobster-writer.constants :as constants]
    [lobster-writer.components.helpers :refer [essay-display]]
-   [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button radio-button]]
+   [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button radio-button modal-panel]]
    [clojure.string :as s]
    [reagent.core :as r]
    [cljsjs.prop-types]
@@ -34,43 +34,72 @@
 ;; home
 
 (defn home []
-  (let [*all-essays (re-frame/subscribe [::subs/all-essays])]
-    [v-box
-     :children [[p "Welcome to Lobster Writer, an application to help you write essays. "
-                 "To start, either start a new essay or select an existing one."]
-                [gap :size "25px"]
-                [:ul.list-group {:style {:max-width "500px"}}
-                 (->> @*all-essays
-                      (map val)
-                      (map (fn [essay]
-                             ^{:key (:id essay)}
-                             [:a.list-group-item.list-group-item-active
-                              {:href "#"
-                               :style {:display "flex"
-                                       :justify-content "space-between"
-                                       :align-items "center"}
-                               :on-click (partial re-frame/dispatch [::events/essay-selected (:id essay)])}
-                              [v-box
-                               :style {:flex "1"}
-                               :justify :start
-                               :align :start
-                               :children [[title
-                                           :label (:title essay)
-                                           :level :level3]
-                                          [progress-bar
-                                           :model (utils/percentage-complete (:highest-step essay))]]]
-                              [gap :size "30px"]
-                              [:span
-                               [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click (fn [evt]
-                                                                                                                                 (re-frame/dispatch [::events/export-requested (:id essay)])
-                                                                                                                                 (.stopPropagation evt))]]])))
-                 [gap :size "10px"]]
-                [h-box
-                 :children [[button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]
-                            [gap :size "10px"]
-                            [file-chooser {:accept ".edn"
-                                           :on-change #(re-frame/dispatch [::events/import-requested %])}
-                             [:span "Import an essay " [:i.zmdi.zmdi-hc-fw-rc.zmdi-upload]]]]]]]))
+  (let [show-import-modal (r/atom false)
+        remote-uri (r/atom nil)
+        encryption-password (r/atom nil)]
+    (fn []
+      (let [*all-essays (re-frame/subscribe [::subs/all-essays])]
+        [v-box
+         :children [[p "Welcome to Lobster Writer, an application to help you write essays. "
+                     "To start, either start a new essay or select an existing one."]
+                    [gap :size "25px"]
+                    [:ul.list-group {:style {:max-width "500px"}}
+                     (->> @*all-essays
+                          (map val)
+                          (map (fn [essay]
+                                 ^{:key (:id essay)}
+                                 [:a.list-group-item.list-group-item-active
+                                  {:href "#"
+                                   :style {:display "flex"
+                                           :justify-content "space-between"
+                                           :align-items "center"}
+                                   :on-click (partial re-frame/dispatch [::events/essay-selected (:id essay)])}
+                                  [v-box
+                                   :style {:flex "1"}
+                                   :justify :start
+                                   :align :start
+                                   :children [[title
+                                               :label (:title essay)
+                                               :level :level3]
+                                              [progress-bar
+                                               :model (utils/percentage-complete (:highest-step essay))]]]
+                                  [gap :size "30px"]
+                                  [:span
+                                   [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click (fn [evt]
+                                                                                                                                     (re-frame/dispatch [::events/export-requested (:id essay)])
+                                                                                                                                     (.stopPropagation evt))]]])))
+                     [gap :size "10px"]]
+                    [h-box
+                     :children [[button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]
+                                [gap :size "10px"]
+                                [file-chooser {:accept ".edn"
+                                               :on-change #(re-frame/dispatch [::events/import-requested %])}
+                                 [:span "Import from File " [:i.zmdi.zmdi-hc-fw-rc.zmdi-upload]]]
+                                [gap :size "10px"]
+                                [button :class "btn-default" :label [:span "Import from Remote " [:i.zmdi.zmdi-gc-fw-rc.zmdi-cloud-download]] :on-click #(reset! show-import-modal true)]
+                                (when @show-import-modal
+                                  [modal-panel
+                                   :child [v-box
+                                           :children [[title :level :level2 :underline? true :label "Import from Remote URL" :margin-bottom "15px"]
+                                                      [label :label "Remote URL"]
+                                                      [input-text
+                                                       :model remote-uri
+                                                       :on-change #(reset! remote-uri %)]
+                                                      [gap :size "8px"]
+                                                      [label :label "Password (optional)"]
+                                                      [input-text
+                                                       :model encryption-password
+                                                       :on-change #(reset! encryption-password %)]
+                                                      [gap :size "10px"]
+                                                      [h-box
+                                                       :children [[button :label "Cancel" :on-click #(reset! show-import-modal false) :class "btn-default"]
+                                                                  [gap :size "5px"]
+                                                                  [button
+                                                                   :label "OK"
+                                                                   :on-click #(do (reset! show-import-modal false)
+                                                                                  (re-frame/dispatch [::events/remote-import-requested @remote-uri @encryption-password]))
+                                                                   :class "btn-primary"]]]]]
+                                   :backdrop-on-click #(reset! show-import-modal false)])]]]]))))
 
 
 (defn about []
@@ -398,44 +427,78 @@
                        (:target-length current-essay) "."]]]])
 
 
-(defn essay-step [current-essay page page-component]
-  [v-box
-   :children [[h-box
-               :style {:margin-top "0.2em"}
-               :align :center
-               :children [[title :level :level2 :label (:title current-essay) :style {:margin-top "0.3em"}]
-                          [gap :size "20px"]
-                          [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])]
-                          (when-not (or (and (= (:notes-type current-essay) :in-app) (str/blank? (:notes current-essay)))
-                                        (and (= (:notes-type current-essay) :external) (str/blank? (:external-notes-url current-essay))))
-                            [md-circle-icon-button :md-icon-name "zmdi-file-text" :tooltip "View Notes" :size :smaller :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])])]]
-              [line]
-              [gap :size "12px"]
-              [:div.lw-container
-               [h-split
-                :initial-split 18
-                :splitter-size "12px"
-                :margin "0px"
-                :panel-1 [v-box
-                          :size "1"
-                          :class "sidebar"
-                          :children [[title :level :level3 :label "Essay Steps"]
-                                     [gap :size "5px"]
-                                     [:ul.nav.nav-pills.nav-stacked
-                                      (->> constants/steps
-                                           (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
-                                                   ^{:key %}
-                                                   [:li.nav-item {:class (str (when (= (:current-step current-essay) %)
-                                                                                "active ")
-                                                                              (when-not enabled
-                                                                                "disabled "))}
-                                                    [:a {:href (when enabled (utils/step-url (:id current-essay) %))}
-                                                     (utils/displayable-step-name %)]])))]]]
-                :panel-2 [v-box
-                          :class "fix-size"
-                          :children [[title :level :level3 :underline? true :label (utils/displayable-step-name page)]
-                                     [gap :size "10px"]
-                                     [page-component current-essay]]]]]]])
+(defn essay-step []
+  (let [share-dialog-open (r/atom false)
+        encryption-key (r/atom nil)]
+    (fn [current-essay page page-component]
+      [v-box
+       :children [[h-box
+                   :style {:margin-top "0.2em"}
+                   :align :center
+                   :children [[title :level :level2 :label (:title current-essay) :style {:margin-top "0.3em"}]
+                              [gap :size "20px"]
+                              [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])]
+                              (when-not (or (and (= (:notes-type current-essay) :in-app) (str/blank? (:notes current-essay)))
+                                            (and (= (:notes-type current-essay) :external) (str/blank? (:external-notes-url current-essay))))
+                                [md-circle-icon-button :md-icon-name "zmdi-file-text" :tooltip "View Notes" :size :smaller :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])])
+                              (when-not (:remote-uri current-essay)
+                                [md-circle-icon-button :md-icon-name "zmdi-share" :tooltip "Share" :size :smaller :on-click #(reset! share-dialog-open true)])
+                              [gap :size "20px"]
+                              (when-let [remote-uri (:remote-uri current-essay)]
+                                [:span
+                                 "Remote URL: "
+                                 [:a {:href remote-uri :target "_blank"} remote-uri]])]]
+                  [line]
+                  [gap :size "12px"]
+                  [:div.lw-container
+                   [h-split
+                    :initial-split 18
+                    :splitter-size "12px"
+                    :margin "0px"
+                    :panel-1 [v-box
+                              :size "1"
+                              :class "sidebar"
+                              :children [[title :level :level3 :label "Essay Steps"]
+                                         [gap :size "5px"]
+                                         [:ul.nav.nav-pills.nav-stacked
+                                          (->> constants/steps
+                                               (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
+                                                       ^{:key %}
+                                                       [:li.nav-item {:class (str (when (= (:current-step current-essay) %)
+                                                                                    "active ")
+                                                                                  (when-not enabled
+                                                                                    "disabled "))}
+                                                        [:a {:href (when enabled (utils/step-url (:id current-essay) %))}
+                                                         (utils/displayable-step-name %)]])))]]]
+                    :panel-2 [v-box
+                              :class "fix-size"
+                              :children [[title :level :level3 :underline? true :label (utils/displayable-step-name page)]
+                                         [gap :size "10px"]
+                                         [page-component current-essay]]]]]
+                  (when @share-dialog-open
+                    [modal-panel
+                     :child [v-box
+                             :children [[title :level :level2 :underline? true :label "Share Essay" :margin-bottom "15px"]
+                                        [p
+                                         "This will share your essay by uploading it to " [:a {:href "https://pastebin.com" :target "_blank"} "PasteBin"] "."]
+                                        [p
+                                         "If you enter an encryption key, nobody will be able to view your essay without the password.
+                                          It is recommended to use 4 random words for this password, like \"correct-horse-battery-staple\"."]
+                                        [label :label "Encryption Password"]
+                                        [input-text
+                                         :model encryption-key
+                                         :on-change #(reset! encryption-key %)]
+                                        [label :label "(Leave blank to share essay unencrypted)"]
+                                        [gap :size "10px"]
+                                        [h-box
+                                         :children [[button :label "Cancel" :on-click #(reset! share-dialog-open false) :class "btn-default"]
+                                                    [gap :size "5px"]
+                                                    [button
+                                                     :label "OK"
+                                                     :on-click #(do (reset! share-dialog-open false)
+                                                                    (re-frame/dispatch [::events/remote-save-requested (:id current-essay) @encryption-key]))
+                                                     :class "btn-primary"]]]]]
+                     :backdrop-on-click #(reset! share-dialog-open false)])]])))
 
 (defn not-found []
   [p "Route not found!"])

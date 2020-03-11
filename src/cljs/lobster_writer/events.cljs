@@ -9,7 +9,9 @@
    [lobster-writer.migrations :as migrations]
    [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
    [clojure.string :as s]
-   [cemerick.url :as url]))
+   [cemerick.url :as url]
+   [ajax.core :as ajax]
+   [cljsjs.crypto-js]))
 
 
 (rf/reg-event-fx
@@ -303,14 +305,71 @@
 
 
 (rf/reg-event-fx
-  ::import-requested
-  (fn-traced [{:keys [db]} [_ file]]
-    {:db db
-     ::effects/read-file {:file file
-                          :on-success #(rf/dispatch [::imported-file-read %])}}))
+ ::import-requested
+ (fn-traced [{:keys [db]} [_ file]]
+   {:db db
+    ::effects/read-file {:file file
+                         :on-success #(rf/dispatch [::imported-file-read %])}}))
 
 (rf/reg-event-db
-  ::imported-file-read
-  (fn-traced [db [_ content]]
-    (when-let [imported-essay (cljs.reader/read-string content)]
-      (assoc-in db [:essays (:id imported-essay)] (migrations/migrate imported-essay)))))
+ ::imported-file-read
+ (fn-traced [db [_ content]]
+   (when-let [imported-essay (cljs.reader/read-string content)]
+     (assoc-in db [:essays (:id imported-essay)] (migrations/migrate imported-essay)))))
+
+(rf/reg-event-fx
+ ::remote-save-requested
+ (fn-traced [{:keys [db]} [_ essay-id encryption-password]]
+   (let [pastebin-key "35c05becebfcf1c58d397031e9496215"
+         essay (get-in db [:essays essay-id])]
+     {:db db
+      :http-xhrio {:method :post
+                   :uri "https://cors-anywhere.herokuapp.com/https://pastebin.com/api/api_post.php"
+                   :response-format (ajax/text-response-format)
+                   :body (utils/->form-data {:api_dev_key pastebin-key
+                                             :api_option "paste"
+                                             :api_paste_code (if-not (s/blank? encryption-password)
+                                                               {:id essay-id
+                                                                :encrypted-data (-> essay
+                                                                                          prn-str
+                                                                                          (js/CryptoJS.AES.encrypt encryption-password)
+                                                                                          str)}
+                                                               essay)
+                                             :api_paste_name (:title essay)
+                                             :api_paste_private 1
+                                             :api_paste_format "clojure"})
+                   :on-success [::remote-save-complete essay-id]}})))
+
+(rf/reg-event-db
+ ::remote-save-complete
+ [interceptors/persist-app-db]
+ (fn-traced [db [_ essay-id response]]
+   (-> db
+       (assoc-in [:essays essay-id :remote-uri]
+                 (s/replace response #"pastebin.com/" "pastebin.com/raw/") ; pastebin returns the wrong url, have to manually fix it
+                 )
+       (assoc-in [:essays essay-id :remote-type] :pastebin))))
+
+(rf/reg-event-fx
+ ::remote-import-requested
+ (fn-traced [{:keys [db]} [_ url key]]
+   {:db db
+    :http-xhrio {:method :get
+                 :uri (str "https://cors-anywhere.herokuapp.com/" url)
+                 :response-format (ajax/text-response-format)
+                 :on-success [::remote-import-complete key url]}}))
+
+(rf/reg-event-db
+ ::remote-import-complete
+ [interceptors/persist-app-db]
+ (fn-traced [db [_ key url response]]
+   (let [response-data (cljs.reader/read-string response)]
+     (-> db
+         (assoc-in [:essays (:id response-data)] (-> (if (s/blank? key)
+                                                       response-data
+                                                       (-> (js/CryptoJS.AES.decrypt (:encrypted-data response-data) key)
+                                                           (.toString (.-Utf8 js/CryptoJS.enc))
+                                                           (cljs.reader/read-string)))
+                                                     (assoc :remote-uri url
+                                                            :remote-type :pastebin)
+                                                     (migrations/migrate)))))))
