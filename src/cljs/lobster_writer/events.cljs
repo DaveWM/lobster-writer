@@ -32,9 +32,9 @@
   (fn [{:keys [db]} [_ active-page params query-params]]
     (let [selected-essay (get-in db [:essays (:essay-id params)])
           effects (when (= active-page :import-essay)
-                    (let [{:strs [url encryption-key]} query-params]
+                    (let [{:strs [uri encryption-key]} query-params]
                       {:http-xhrio {:method :get
-                                    :uri (str "https://cors-anywhere.herokuapp.com/" (get query-params "uri"))
+                                    :uri (str "https://cors-anywhere.herokuapp.com/" uri)
                                     :response-format (ajax/text-response-format)
                                     :on-success [::remote-import-complete encryption-key]
                                     :on-failure [::remote-call-failed]}}))]
