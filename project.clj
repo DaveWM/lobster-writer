@@ -17,7 +17,8 @@
                  [cljsjs/crypto-js "3.1.9-1-0"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]
-            [lein-garden "0.3.0"]]
+            [lein-garden "0.3.0"]
+            [lein-figwheel "0.5.18"]]
 
   :min-lein-version "2.5.3"
 
