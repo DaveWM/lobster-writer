@@ -41,4 +41,6 @@
    [:&__code {:margin-left "20px"}]]
   [:.sidebar {:background-color light-gray
               :padding "20px"
-              :border-radius "8px"}])
+              :border-radius "8px"}]
+  [:.dm-logo
+   [:img {:max-height "30px"}]])

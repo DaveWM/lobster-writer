@@ -506,7 +506,12 @@
      :padding "25px"
      :children [[h-box
                  :children [[title :level :level1 :margin-top "2px" :margin-bottom "2px" :label "Lobster Writer"]
-                            [gap :size "55px"]
+                            [gap :size "20px"]
+                            "by"
+                            [gap :size "8px"]
+                            [:a {:class "dm-logo" :href "https://davemartin.me" :target "_blank"}
+                             [:img {:src "/images/dm-logo.png"}]]
+                            [gap :size "75px"]
                             [hyperlink-href
                              :label "Home"
                              :href "/"]
