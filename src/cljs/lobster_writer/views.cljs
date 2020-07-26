@@ -1,22 +1,22 @@
 (ns lobster-writer.views
   (:require
-   [re-frame.core :as re-frame]
-   [lobster-writer.subs :as subs]
-   [lobster-writer.events :as events]
-   [lobster-writer.components.editable-list :refer [editable-list]]
-   [lobster-writer.utils :as utils]
-   [lobster-writer.constants :as constants]
-   [lobster-writer.components.helpers :refer [essay-display]]
-   [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button radio-button modal-panel alert-box]]
-   [clojure.string :as s]
-   [reagent.core :as r]
-   [cljsjs.prop-types]
-   [cljsjs.react-quill]
-   [cljs-time.core :as t]
-   [cljs-time.format :as tf]
-   [cljs-time.coerce :as tc]
-   [lobster-writer.components.file-chooser :refer [file-chooser]]
-   [clojure.string :as str]))
+    [re-frame.core :as re-frame]
+    [lobster-writer.subs :as subs]
+    [lobster-writer.events :as events]
+    [lobster-writer.components.editable-list :refer [editable-list]]
+    [lobster-writer.utils :as utils]
+    [lobster-writer.constants :as constants]
+    [lobster-writer.components.helpers :refer [essay-display]]
+    [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button radio-button modal-panel alert-box]]
+    [clojure.string :as s]
+    [reagent.core :as r]
+    [cljsjs.prop-types]
+    [cljsjs.react-quill]
+    [cljs-time.core :as t]
+    [cljs-time.format :as tf]
+    [cljs-time.coerce :as tc]
+    [lobster-writer.components.file-chooser :refer [file-chooser]]
+    [clojure.string :as str]))
 
 
 (def react-quill (r/adapt-react-class js/ReactQuill))
@@ -35,74 +35,62 @@
 
 (defn home []
   (let [*all-essays (re-frame/subscribe [::subs/all-essays])]
-    [v-box
-     :children [[p "Welcome to Lobster Writer, an application to help you write essays. "
-                 "To start, either start a new essay or select an existing one."]
-                [gap :size "25px"]
-                [:ul.list-group {:style {:max-width "500px"}}
-                 (->> @*all-essays
-                      (map val)
-                      (map (fn [essay]
-                             ^{:key (:id essay)}
-                             [:a.list-group-item.list-group-item-active
-                              {:href "#"
-                               :style {:display "flex"
-                                       :justify-content "space-between"
-                                       :align-items "center"}
-                               :on-click (partial re-frame/dispatch [::events/essay-selected (:id essay)])}
-                              [v-box
-                               :style {:flex "1"}
-                               :justify :start
-                               :align :start
-                               :children [[title
-                                           :label (:title essay)
-                                           :level :level3]
-                                          [progress-bar
-                                           :model (utils/percentage-complete (:highest-step essay))]]]
-                              [gap :size "30px"]
-                              [:span
-                               [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click (fn [evt]
-                                                                                                                                 (re-frame/dispatch [::events/export-requested (:id essay)])
-                                                                                                                                 (.stopPropagation evt))]]])))
-                 [gap :size "10px"]]
-                [h-box
-                 :children [[button :class "btn-primary" :label "Start a new essay" :on-click #(re-frame/dispatch [::events/start-new-essay])]
-                            [gap :size "10px"]
-                            [file-chooser {:accept ".edn"
-                                           :on-change #(re-frame/dispatch [::events/import-requested %])}
-                             [:span "Import from File " [:i.zmdi.zmdi-hc-fw-rc.zmdi-upload]]]]]]]))
+    [:div
+     [:div
+      (->> @*all-essays
+           (map val)
+           (map (fn [essay]
+                  ^{:key (:id essay)}
+                  [:div.uk-card.uk-card-body.uk-card-default.uk-margin
+                   [:a {:href "#"
+                        :style {:display "flex"
+                                :justify-content "space-between"
+                                :align-items "center"}
+                        :on-click (partial re-frame/dispatch [::events/essay-selected (:id essay)])}
+                    [:div.uk-flex.uk-flex-column.uk-flex-1
+                     [:h3 (:title essay)]
+                     [:progress.uk-progress
+                      {:value (utils/percentage-complete (:highest-step essay))
+                       :max "100"}]]
+                    [:div.uk-margin-left.uk-margin-right
+                     [:button.uk-button.uk-button-default.uk-button-small
+                      {:tooltip "Export"
+                       :on-click (fn [evt]
+                                   (re-frame/dispatch [::events/export-requested (:id essay)])
+                                   (.stopPropagation evt))}
+                      [:i {:class "zmdi zmdi-download"}]]]]])))]
+     [:div.uk-flex
+      [:button.uk-button.uk-button-primary {:on-click #(re-frame/dispatch [::events/start-new-essay])} "New Essay"]
+      [file-chooser {:accept ".edn"
+                     :on-change #(re-frame/dispatch [::events/import-requested %])}
+       [:span "Import " [:i.zmdi.zmdi-hc-fw-rc.zmdi-upload]]]]]))
 
 
 (defn about []
-  [v-box :justify :start :align :start
-   :children [[p "Lobster Writer is an application to help you write essays. It is based on the advice of Dr. Jordan Peterson in "
-               [hyperlink-href :label "this essay writing guide" :href "/Jordan-Peterson-Writing-Template.docx"]
-               ". According to Dr. Peterson, this method will help you \"to write an excellent essay from beginning to end\". "]
-              [p
-               "Lobster Writer is free (both gratis and libre) software - you can find the souce code "
-               [hyperlink-href :label "here" :href "https://github.com/DaveWM/lobster-writer"]
-               ". If you would like to support me in developing Lobster Writer, please follow the link below."]
-              [:a.bmc-button {:target "_blank"
-                              :href "https://www.buymeacoffee.com/HOdq0AxJa"}
-               [:img {:src "https://www.buymeacoffee.com/assets/img/BMC-btn-logo.svg"
-                      :alt "Buy me a coffee"
-                      :style {:margin-left "5px"}}]
-               [:span "Buy me a coffee"]]
-              [gap :size "30px"]
-              [p {:style {:font-weight "bold"}} "Lobster Writer is not associated with Dr. Peterson in any way."]]])
+  [:div
+   [:p "Lobster Writer is an application to help you write essays. It is based on the advice of Dr. Jordan Peterson in "
+    [:a {:href "/Jordan-Peterson-Writing-Template.docx"} "this essay writing guide"]
+    ". According to Dr. Peterson, this method will help you \"to write an excellent essay from beginning to end\". "]
+   [:p
+    "Lobster Writer is free (both gratis and libre) software - you can find the souce code "
+    [:a {:href "https://github.com/DaveWM/lobster-writer"} "here"]
+    ". If you would like to support me in developing Lobster Writer, please follow the link below."]
+
+   [:p.uk-text-bolder "Lobster Writer is not associated with Dr. Peterson in any way."]])
 
 
 (defn candidate-topics [current-essay]
-  [v-box
-   :children [[p "This is the first step in writing your essay. List around "
-               [:b "10"]
-               " topics that you would like to write about, or questions that you would like to answer."]
-              [editable-list {:items (:candidate-topics current-essay)
-                              :on-item-added #(re-frame/dispatch [::events/candidate-topic-added %])
-                              :on-item-removed #(re-frame/dispatch [::events/candidate-topic-removed %])}]
-              [gap :size "15px"]
-              [button :disabled? (empty? (:candidate-topics current-essay)) :class "btn-primary" :label "Next Step"
-               :on-click #(re-frame/dispatch [::events/next-step])]]])
+  [:div
+   [p "This is the first step in writing your essay. List around "
+    [:b "10"]
+    " topics that you would like to write about, or questions that you would like to answer."]
+   [editable-list {:items (:candidate-topics current-essay)
+                   :on-item-added #(re-frame/dispatch [::events/candidate-topic-added %])
+                   :on-item-removed #(re-frame/dispatch [::events/candidate-topic-removed %])}]
+   [:button.uk-button.uk-button-primary
+    {:disabled (empty? (:candidate-topics current-essay))
+     :on-click #(re-frame/dispatch [::events/next-step])}
+    "Next Step"]])
 
 
 (defn reading-list [current-essay]
@@ -400,70 +388,64 @@
 
 (defn essay-step []
   (let [share-dialog-open (r/atom false)
-        encryption-key (r/atom nil)]
+        encryption-key    (r/atom nil)]
     (fn [current-essay page page-component]
-      [v-box
-       :children [[h-box
-                   :style {:margin-top "0.2em"}
-                   :align :center
-                   :children [[title :level :level2 :label (:title current-essay) :style {:margin-top "0.3em"}]
-                              [gap :size "20px"]
-                              [md-circle-icon-button :md-icon-name "zmdi-download" :tooltip "Export" :size :smaller :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])]
-                              (when-not (or (and (= (:notes-type current-essay) :in-app) (str/blank? (:notes current-essay)))
-                                            (and (= (:notes-type current-essay) :external) (str/blank? (:external-notes-url current-essay))))
-                                [md-circle-icon-button :md-icon-name "zmdi-file-text" :tooltip "View Notes" :size :smaller :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])])
-                              [md-circle-icon-button :md-icon-name "zmdi-share" :tooltip "Share" :size :smaller :on-click #(reset! share-dialog-open true)]]]
-                  [line]
-                  [gap :size "12px"]
-                  [:div.lw-container
-                   [h-split
-                    :initial-split 18
-                    :splitter-size "12px"
-                    :margin "0px"
-                    :panel-1 [v-box
-                              :size "1"
-                              :class "sidebar"
-                              :children [[title :level :level3 :label "Essay Steps"]
-                                         [gap :size "5px"]
-                                         [:ul.nav.nav-pills.nav-stacked
-                                          (->> constants/steps
-                                               (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
-                                                       ^{:key %}
-                                                       [:li.nav-item {:class (str (when (= (:current-step current-essay) %)
-                                                                                    "active ")
-                                                                                  (when-not enabled
-                                                                                    "disabled "))}
-                                                        [:a {:href (when enabled (utils/step-url (:id current-essay) %))}
-                                                         (utils/displayable-step-name %)]])))]]]
-                    :panel-2 [v-box
-                              :class "fix-size"
-                              :children [[title :level :level3 :underline? true :label (utils/displayable-step-name page)]
-                                         [gap :size "10px"]
-                                         [page-component current-essay]]]]]
-                  (when @share-dialog-open
-                    [modal-panel
-                     :child [v-box
-                             :children [[title :level :level2 :underline? true :label "Share Essay" :margin-bottom "15px"]
-                                        [p
-                                         "This will share your essay by uploading it to " [:a {:href "https://pastebin.com" :target "_blank"} "PasteBin"] "."]
-                                        [p
-                                         "If you enter an encryption key, nobody will be able to view your essay without the password.
-                                          It is recommended to use 4 random words for this password, like \"correct-horse-battery-staple\"."]
-                                        [label :label "Encryption Password"]
-                                        [input-text
-                                         :model encryption-key
-                                         :on-change #(reset! encryption-key %)]
-                                        [label :label "(Leave blank to share essay unencrypted)"]
-                                        [gap :size "10px"]
-                                        [h-box
-                                         :children [[button :label "Cancel" :on-click #(reset! share-dialog-open false) :class "btn-default"]
-                                                    [gap :size "5px"]
-                                                    [button
-                                                     :label "OK"
-                                                     :on-click #(do (reset! share-dialog-open false)
-                                                                    (re-frame/dispatch [::events/remote-save-requested (:id current-essay) @encryption-key]))
-                                                     :class "btn-primary"]]]]]
-                     :backdrop-on-click #(reset! share-dialog-open false)])]])))
+      [:div.uk-flex.uk-flex-column
+       [:div.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle
+        [:h3 {:style {:margin "0.3em 0"}}
+         (:title current-essay)]
+        [:div.uk-flex
+         [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
+          {"uk-tooltip" "title: Download Essay; pos: bottom"
+           :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])}
+          [:i.zmdi.zmdi-download]]
+         (when-not (or (and (= (:notes-type current-essay) :in-app) (str/blank? (:notes current-essay)))
+                       (and (= (:notes-type current-essay) :external) (str/blank? (:external-notes-url current-essay))))
+           [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
+            {"uk-tooltip" "title: View Notes; pos: bottom"
+             :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])}
+            [:i.zmdi.zmdi-file-text]])
+         [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
+          {"uk-tooltip" "title: Share Essay; pos: bottom"
+           "uk-toggle" "target: #share-modal"}
+          [:i.zmdi.zmdi-share]]]]
+       [:div {"uk-grid" "true"
+              :class "uk-child-width-expand@s"}
+        [:div.uk-width-auto
+         [:ul.uk-nav.uk-nav-default.sidebar
+          [:li.uk-nav-header "Essay Steps"]
+          (->> constants/steps
+               (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
+                       ^{:key %}
+                       [:li {:class (str (when (= (:current-step current-essay) %)
+                                           "uk-active ")
+                                         (when-not enabled
+                                           "uk-disabled "))}
+                        [:a {:href (when enabled (utils/step-url (:id current-essay) %))}
+                         (utils/displayable-step-name %)]])))]]
+        [:div.uk-width-expand
+         [:h3 (utils/displayable-step-name page)]
+         [page-component current-essay]]]
+       [:div#share-modal {"uk-modal" "true"}
+        [:div.uk-modal-dialog.uk-modal-body
+         [:h3 "Share Essay"]
+         [p
+          "This will share your essay by uploading it to " [:a {:href "https://pastebin.com" :target "_blank"} "PasteBin"] "."]
+         [p
+          "If you enter an encryption key, nobody will be able to view your essay without the password.
+           It is recommended to use 4 random words for this password, like \"correct-horse-battery-staple\"."]
+         [:label "Encryption Password"]
+         [:input.uk-input
+          {:value @encryption-key
+           :on-change #(reset! encryption-key (.-value (.-target %)))}]
+         [:label "(Leave blank to share essay unencrypted)"]
+         [:div
+          [:button.uk-button.uk-button-default.uk-modal-close
+           {:on-click #(reset! share-dialog-open false)}
+           "Cancel"]
+          [:button.uk-button.uk-button-primary.uk-modal-close
+           {:on-click #(re-frame/dispatch [::events/remote-save-requested (:id current-essay) @encryption-key])}
+           "OK"]]]]])))
 
 (defn not-found []
   [p "Route not found!"])
@@ -472,79 +454,58 @@
   [p "Importing..."])
 
 (defn pages [page]
-  (let [page-component (case page
-                         :home home
-                         :about about
-                         :import-essay import-essay
-                         :candidate-topics candidate-topics
-                         :reading-list reading-list
-                         :topic-choice topic-choice
-                         :outline outline
-                         :outline-paragraphs outline-paragraphs
-                         :rewrite-sentences rewrite-sentences
-                         :reorder-sentences reorder-sentences
-                         :reorder-paragraphs reorder-paragraphs
-                         :read-draft read-draft
-                         :second-outline second-outline
-                         :copy-from-draft copy-from-draft
-                         :final-essay final-essay
-                         not-found)
+  (let [page-component   (case page
+                           :home home
+                           :about about
+                           :import-essay import-essay
+                           :candidate-topics candidate-topics
+                           :reading-list reading-list
+                           :topic-choice topic-choice
+                           :outline outline
+                           :outline-paragraphs outline-paragraphs
+                           :rewrite-sentences rewrite-sentences
+                           :reorder-sentences reorder-sentences
+                           :reorder-paragraphs reorder-paragraphs
+                           :read-draft read-draft
+                           :second-outline second-outline
+                           :copy-from-draft copy-from-draft
+                           :final-essay final-essay
+                           not-found)
         for-single-essay (not (contains? #{home about import-essay not-found} page-component))]
     (if for-single-essay
       (let [*current-essay (re-frame/subscribe [::subs/current-essay])]
         (if @*current-essay
           [essay-step @*current-essay page page-component]
-          [p "Essay not found!"]))
+          [:p "Essay not found!"]))
       [page-component])))
 
 
 (defn main-panel []
   (let [*active-page (re-frame/subscribe [::subs/active-page])
-        *last-saved (re-frame/subscribe [::subs/last-saved])
-        *alerts (re-frame/subscribe [::subs/alerts])]
-    [v-box
-     :padding "25px"
-     :children [[h-box
-                 :children [[title :level :level1 :margin-top "2px" :margin-bottom "2px" :label "Lobster Writer"]
-                            [gap :size "20px"]
-                            "by"
-                            [gap :size "8px"]
-                            [:a {:class "dm-logo" :href "https://davemartin.me" :target "_blank"}
-                             [:img {:src "/images/dm-logo.png"}]]
-                            [gap :size "75px"]
-                            [hyperlink-href
-                             :label "Home"
-                             :href "/"]
-                            [gap :size "20px"]
-                            [hyperlink-href
-                             :label "About"
-                             :href "/about"]
-                            [gap :size "0" :style {:flex "1"}]
-                            [hyperlink-href :href "https://www.buymeacoffee.com/HOdq0AxJa" :tooltip "Buy me a Coffee" :target "_blank"
-                             :label [:img {:src "https://www.buymeacoffee.com/assets/img/BMC-btn-logo.svg"}]]
-                            [gap :size "2px"]
-                            [hyperlink-href :href "https://github.com/DaveWM/lobster-writer" :tooltip "GitHub Repo" :target "_blank"
-                             :label [:i.zmdi.zmdi-hc-2x.zmdi-github]]
-                            [gap :size "5px"]
-                            [hyperlink-href :href "https://davemartin.me" :tooltip "About the Developer"
-                             :label [:i.zmdi.zmdi-hc-2x.zmdi-account]]
-                            [gap :size "20px"]
-                            (when @*last-saved
-                              [title :level :level4 :label (str "Last Saved at: " (->> (tc/from-date @*last-saved)
-                                                                                       (t/to-default-time-zone)
-                                                                                       (tf/unparse (tf/formatters :hour-minute))))])]
-                 :align :center]
-                [line]
-                [gap :size "15px"]
-                [:div
-                 (for [alert @*alerts]
-                   ^{:key (:id alert)}
-                   [alert-box
-                    :id (:id alert)
-                    :body (:body alert)
-                    :alert-type (or (:alert-type alert) :info)
-                    :closeable? true
-                    :on-close #(re-frame/dispatch [::events/close-alert %])])]
-                [pages @*active-page]
-                [:div#saving-indicator
-                 [md-icon-button :md-icon-name "zmdi-floppy" :size :larger]]]]))
+        *alerts      (re-frame/subscribe [::subs/alerts])]
+    [:div
+     [:div#app-bar.uk-navbar-container.uk-light {"uk-navbar" ""}
+      [:div.uk-navbar-left
+       [:a.uk-navbar-item.uk-logo {:href "/"} "Lobster Writer"]]
+      [:div.uk-navbar-right
+       [:a.uk-navbar-item {:href "/"} "Home"]
+       [:a.uk-navbar-item {:href "/about"} "About"]
+       [:a.uk-navbar-item
+        {:style {:text-decoration "none"}
+         :href "https://github.com/DaveWM/lobster-writer"
+         :target "_blank"}
+        [:i.zmdi.zmdi-hc-2x.zmdi-github {"uk-tooltip" "title: GitHub Repo; pos: bottom"}]]
+       [:a.uk-navbar-item {:class "dm-logo" :href "https://davemartin.me" :target "_blank"}
+        [:img {:src "/images/dm-logo.png"}]]]]
+     [:div.uk-section
+      [:div.uk-container
+       [:div
+        (for [alert @*alerts]
+          ^{:key (:id alert)}
+          [:div.uk-alert.uk-alert-danger
+           [:a.uk-alert-close {"uk-close" "true"
+                               :on-click #(re-frame/dispatch [::events/close-alert %])}]
+           (:body alert)])]
+       [pages @*active-page]]
+      [:div#saving-indicator
+       [md-icon-button :md-icon-name "zmdi-floppy" :size :larger]]]]))

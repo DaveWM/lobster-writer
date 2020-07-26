@@ -1,8 +1,15 @@
 (ns lobster-writer.css
   (:require [garden.def :refer [defstyles]]
-            [garden.stylesheet :refer [at-keyframes]]))
+            [garden.stylesheet :refer [at-keyframes]]
+            [garden.color :as gc]))
 
 (def light-gray "#e1e8f0")
+
+(def palette-1 "#0072BB")
+(def palette-2 "#1B3B6F")
+(def palette-3 "0B132B")
+(def palette-4 "#B9D6F2")
+(def palette-5 "#00ABE7")
 
 (defstyles screen
   [:.quill {:width "600px"
@@ -28,9 +35,6 @@
                        :opacity "0"}]
   [:.progress {:margin-bottom "0 !important"}]
   [:.rc-progress-bar-wrapper {:width "100%"}]
-  [:.lw-container {:max-width "1000px"
-                   :width "100%"
-                   :align-self "center"}]
   [:.essay-display {:border "1px solid black"
                     :border-radius "8px"
                     :padding "15px"
@@ -39,8 +43,11 @@
     [:&:last-child {:margin-bottom "0"}]]
    [:&__sentence {:text-indent "20px"}]
    [:&__code {:margin-left "20px"}]]
-  [:.sidebar {:background-color light-gray
-              :padding "20px"
+  [:ul.sidebar {:background-color (gc/lighten palette-1 60)
+              :padding "15px"
+              :margin "0 20px"
               :border-radius "8px"}]
   [:.dm-logo
-   [:img {:max-height "30px"}]])
+   [:img {:max-height "26px"}]]
+  [:#app-bar {:background-color palette-2
+              :color "white"}])

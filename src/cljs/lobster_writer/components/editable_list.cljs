@@ -1,49 +1,49 @@
 (ns lobster-writer.components.editable-list
-  (:require [re-com.core :as rc]
-            [reagent.core :as reagent]
+  (:require [reagent.core :as reagent]
             [lobster-writer.utils :as utils]))
 
 
-(defn editable-list [{:keys [on-item-added on-item-removed on-item-moved-up on-item-moved-down label-fn items]
-                      :or {label-fn identity}}]
+(defn editable-list []
   (let [*input-text (reagent/atom "")]
-    [rc/v-box
-     :children [[:ul.list-group {:style {:max-width "500px"}}
-                 (->> items
-                      (map-indexed (fn [idx item]
-                                     ^{:key item}
-                                     [:li.list-group-item.list-group-item-active
-                                      [rc/h-box
-                                       :justify :between
-                                       :children [[:span {:style {:overflow-x "auto"}}
-                                                   (-> (label-fn item)
-                                                       (utils/highlight-links (fn [url]
-                                                                                [rc/hyperlink-href
-                                                                                 :href url
-                                                                                 :label url
-                                                                                 :target "_blank"])))]
-                                                  [:span
-                                                   (when on-item-removed
-                                                     [rc/md-icon-button
-                                                      :md-icon-name "zmdi-delete" :size :smaller
-                                                      :on-click (partial on-item-removed item)])
-                                                   (when on-item-moved-up
-                                                     [rc/md-icon-button
-                                                      :md-icon-name "zmdi-chevron-up" :size :smaller
-                                                      :on-click (partial on-item-moved-up item)
-                                                      :disabled? (zero? idx)])
-                                                   (when on-item-moved-down
-                                                     [rc/md-icon-button
-                                                      :md-icon-name "zmdi-chevron-down" :size :smaller
-                                                      :on-click (partial on-item-moved-down item)
-                                                      :disabled? (= idx (dec (count items)))])]]]])))]
-                [rc/gap :size "10px"]
-                (when on-item-added
-                  [rc/h-box
-                   :children [[rc/input-text
-                               :model *input-text
-                               :change-on-blur? false
-                               :on-change #(reset! *input-text %)
-                               :attr {:on-key-press #(when (= 13 (.-which %))
-                                                       (on-item-added @*input-text))}]
-                              [rc/button :label "Add Item" :on-click #(on-item-added @*input-text)]]])]]))
+    (fn [{:keys [on-item-added on-item-removed on-item-moved-up on-item-moved-down label-fn items]
+          :or {label-fn identity}}]
+      [:div.editable-list
+       [:ul.uk-list.uk-list-striped
+        (->> items
+             (map-indexed (fn [idx item]
+                            ^{:key item}
+                            [:li.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle
+                             [:span {:style {:overflow-x "auto"}}
+                              (-> (label-fn item)
+                                  (utils/highlight-links (fn [url]
+                                                           [:a
+                                                            {:href url
+                                                             :target "_blank"}
+                                                            url])))]
+                             [:span
+                              (when on-item-removed
+                                [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
+                                 {:on-click (partial on-item-removed item)}
+                                 [:i.zmdi.zmdi-delete]])
+                              (when on-item-moved-up
+                                [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
+                                 {:on-click (partial on-item-moved-up item)
+                                  :disabled (zero? idx)}
+                                 [:i.zmdi.zmdi-chevron-up]])
+                              (when on-item-moved-down
+                                [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
+                                 {:on-click (partial on-item-moved-down item)
+                                  :disabled (= idx (dec (count items)))}
+                                 [:i.zmdi.zmdi-chevron-down]])]])))]
+       (when on-item-added
+         [:div.uk-flex.uk-flex-row
+          [:input.uk-input
+           {:value @*input-text
+            :on-change #(reset! *input-text (-> % .-target .-value))
+            :on-key-press #(when (= 13 (.-which %))
+                             (do (on-item-added @*input-text)
+                                 (reset! *input-text "")))}]
+          [:button.uk-button.uk-button-default
+           {:on-click #(do (on-item-added @*input-text)
+                           (reset! *input-text ""))}
+           "Add"]])])))

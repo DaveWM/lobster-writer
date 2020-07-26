@@ -9,7 +9,8 @@
               :on-change #((:on-change props) (-> % .-target .-files (.item 0)))
               :type "file"
               :style {:display "none"}}]
-     [button
-      :on-click #(let [file-input (.getElementById js/document id)]
-                   (.click file-input))
-      :label button-child]]))
+     [:button.uk-button.uk-button-default
+      {:style {:height "100%"}
+       :on-click #(let [file-input (.getElementById js/document id)]
+                    (.click file-input))}
+      button-child]]))
