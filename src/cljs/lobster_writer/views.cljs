@@ -80,88 +80,94 @@
 
 
 (defn candidate-topics [current-essay]
-  [:div
-   [p "This is the first step in writing your essay. List around "
+  [:div.step
+   [:p "This is the first step in writing your essay. List around "
     [:b "10"]
     " topics that you would like to write about, or questions that you would like to answer."]
    [editable-list {:items (:candidate-topics current-essay)
                    :on-item-added #(re-frame/dispatch [::events/candidate-topic-added %])
                    :on-item-removed #(re-frame/dispatch [::events/candidate-topic-removed %])}]
-   [:button.uk-button.uk-button-primary
+   [:button.uk-button.uk-button-primary.next-step
     {:disabled (empty? (:candidate-topics current-essay))
      :on-click #(re-frame/dispatch [::events/next-step])}
     "Next Step"]])
 
 
 (defn reading-list [current-essay]
-  [v-box
-   :children [[p
-               "Great, you've thought of some potential topics to write about. Now you need to find some books or articles to read. "
-               "You should read around " [:b "5 to 10 books per 1000 words of essay."] " List them here."]
-              [editable-list {:items (:reading-list current-essay)
-                              :on-item-added #(re-frame/dispatch [::events/reading-list-item-added %])
-                              :on-item-removed #(re-frame/dispatch [::events/reading-list-item-removed %])}]
-              [gap :size "20px"]
-              [p
-               "You can also make some notes if you want. "
-               "One good way to make notes is to read a small section at a time, then write down what you have learned and any questions that you have. "]
-              [p
-               "Where do you want to store the notes?"]
-              [h-box
-               :children [[gap :size "25px"]
-                          [radio-button
-                           :model (:notes-type current-essay)
-                           :value :in-app
-                           :label "here"
-                           :on-change (fn [v]
-                                        (re-frame/dispatch [::events/notes-type-updated v]))]
-                          [gap :size "15px"]
-                          [radio-button
-                           :model (:notes-type current-essay)
-                           :value :external
-                           :label "in another app"
-                           :on-change (fn [v]
-                                        (re-frame/dispatch [::events/notes-type-updated v]))]]]
-              [gap :size "15px"]
-              (if (= (:notes-type current-essay) :in-app)
-                [quill {:default-value (:notes current-essay)
-                        :on-change (fn [html _ _ editor]
-                                     (re-frame/dispatch [::events/in-app-notes-updated html (.call (aget editor "getText"))]))}]
-                [input-text
-                 :model (:external-notes-url current-essay)
-                 :on-change #(re-frame/dispatch [::events/external-notes-url-updated %])
-                 :placeholder "Enter the URL of your notes here"])
-              [gap :size "15px"]
-              [button
-               :disabled? (empty? (:reading-list current-essay)) :class "btn-primary" :label "Next Step"
-               :on-click #(re-frame/dispatch [::events/next-step])]]])
+  [:div.step
+   [:p
+    "Great, you've thought of some potential topics to write about. Now you need to find some books or articles to read. "
+    "You should read around " [:b "5 to 10 books per 1000 words of essay."] " List them here."]
+   [editable-list {:items (:reading-list current-essay)
+                   :on-item-added #(re-frame/dispatch [::events/reading-list-item-added %])
+                   :on-item-removed #(re-frame/dispatch [::events/reading-list-item-removed %])}]
+   [:p
+    "You can also make some notes if you want. "
+    "One good way to make notes is to read a small section at a time, then write down what you have learned and any questions that you have. "]
+   [:span
+    "Where do you want to store the notes?"]
+   [:form {:style {:display :flex
+                   :flex-direction :column
+                   :flex-wrap "nowrap"
+                   :margin-top "10px"
+                   :margin-bottom "25px"}}
+    [:label {:for "in-app"}
+     [:input.uk-radio {:id "in-app"
+                       :type "radio"
+                       :name "notes-type"
+                       :value :in-app
+                       :checked (= (:notes-type current-essay) :in-app)
+                       :on-change (fn [v]
+                                    (re-frame/dispatch [::events/notes-type-updated (-> v
+                                                                                        .-target
+                                                                                        .-value
+                                                                                        keyword)]))}]
+     " here"]
+    [:label {:for "external"}
+     [:input.uk-radio {:id "external"
+                       :type "radio"
+                       :name "notes-type"
+                       :value :external
+                       :checked (= (:notes-type current-essay) :external)
+                       :on-change (fn [v]
+                                    (re-frame/dispatch [::events/notes-type-updated (-> v
+                                                                                        .-target
+                                                                                        .-value
+                                                                                        keyword)]))}]
+     " in another app"]]
+   (if (= (:notes-type current-essay) :in-app)
+     [quill {:default-value (:notes current-essay)
+             :on-change (fn [html _ _ editor]
+                          (re-frame/dispatch [::events/in-app-notes-updated html (.call (aget editor "getText"))]))}]
+     [input-text
+      :model (:external-notes-url current-essay)
+      :on-change #(re-frame/dispatch [::events/external-notes-url-updated %])
+      :placeholder "Enter the URL of your notes here"])
+   [:button.uk-button.uk-button-primary.next-step
+    {:disabled (empty? (:reading-list current-essay))
+     :on-click #(re-frame/dispatch [::events/next-step])}
+    "Next Step"]])
 
 
 (defn topic-choice [current-essay]
-  [v-box
-   :children [[p "You now need to choose your topic, and the length your essay will be. "]
-              (when-not (contains? (:candidate-topics current-essay) (:title current-essay))
-                [p {:style {:font-weight "bold"}} "Please pick a topic from the below choices"])
-              [:ul.list-group {:style {:max-width "500px"}}
-               (->> (:candidate-topics current-essay)
-                    (map #(-> [:a.list-group-item.list-group-item-active
-                               {:href "#"
-                                :class (when (= % (:title current-essay)) "active")
-                                :on-click (partial re-frame/dispatch [::events/topic-selected %])}
-                               %])))]
-              [gap :size "15px"]
-              [label :label "Target Essay Length"]
-              [input-text
-               :model (str (:target-length current-essay))
-               :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int %)])
-               :change-on-blur? false]
-              [gap :size "15px"]
-              [button
-               :disabled? (not (and (contains? (:candidate-topics current-essay) (:title current-essay))
-                                    (:target-length current-essay)))
-               :class "btn-primary"
-               :label "Next Step"
-               :on-click #(re-frame/dispatch [::events/next-step])]]])
+  [:div.step
+   [:p "You now need to choose your topic, and the length your essay will be. "]
+   [:b "Please pick a topic from the below choices"]
+   [:ul.uk-card.uk-card-default.uk-list.uk-list-striped.topic-selection
+    (->> (:candidate-topics current-essay)
+         (map #(-> [:li.topic-selection__item {:class (when (= % (:title current-essay)) "topic-selection__item--selected")
+                                               :on-click (partial re-frame/dispatch [::events/topic-selected %])}
+                    %])))]
+   [label :label "Target Essay Length"]
+   [input-text
+    :model (str (:target-length current-essay))
+    :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int %)])
+    :change-on-blur? false]
+   [:button.uk-button.uk-button-primary.next-step
+    {:disabled (not (and (contains? (:candidate-topics current-essay) (:title current-essay))
+                          (:target-length current-essay)))
+     :on-click #(re-frame/dispatch [::events/next-step])}
+    "Next Step"]])
 
 
 (defn outline [current-essay]
@@ -390,8 +396,8 @@
   (let [share-dialog-open (r/atom false)
         encryption-key    (r/atom nil)]
     (fn [current-essay page page-component]
-      [:div.uk-flex.uk-flex-column
-       [:div.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle
+      [:div.uk-flex.uk-flex-column.essay
+       [:div.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle.essay__header
         [:h3 {:style {:margin "0.3em 0"}}
          (:title current-essay)]
         [:div.uk-flex
@@ -411,18 +417,20 @@
           [:i.zmdi.zmdi-share]]]]
        [:div {"uk-grid" "true"
               :class "uk-child-width-expand@s"}
-        [:div.uk-width-auto
-         [:ul.uk-nav.uk-nav-default.sidebar
-          [:li.uk-nav-header "Essay Steps"]
-          (->> constants/steps
-               (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
-                       ^{:key %}
-                       [:li {:class (str (when (= (:current-step current-essay) %)
-                                           "uk-active ")
-                                         (when-not enabled
-                                           "uk-disabled "))}
-                        [:a {:href (when enabled (utils/step-url (:id current-essay) %))}
-                         (utils/displayable-step-name %)]])))]]
+        [:div.uk-width-auto.uk-flex
+         [:div.sidebar.uk-card.uk-card-body
+          [:h4.sidebar__header "Essay Steps"]
+          [:div.sidebar__list
+           (->> constants/steps
+                (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
+                        ^{:key %}
+                        [:a.sidebar__step
+                         {:href (when enabled (utils/step-url (:id current-essay) %))
+                          :class (str (when (= (:current-step current-essay) %)
+                                        "sidebar__step--active ")
+                                      (when-not enabled
+                                        "sidebar__step--disabled "))}
+                         (utils/displayable-step-name %)])))]]]
         [:div.uk-width-expand
          [:h3 (utils/displayable-step-name page)]
          [page-component current-essay]]]
@@ -440,12 +448,12 @@
            :on-change #(reset! encryption-key (.-value (.-target %)))}]
          [:label "(Leave blank to share essay unencrypted)"]
          [:div
-          [:button.uk-button.uk-button-default.uk-modal-close
-           {:on-click #(reset! share-dialog-open false)}
-           "Cancel"]
           [:button.uk-button.uk-button-primary.uk-modal-close
            {:on-click #(re-frame/dispatch [::events/remote-save-requested (:id current-essay) @encryption-key])}
-           "OK"]]]]])))
+           "OK"]
+          [:button.uk-button.uk-button-default.uk-modal-close
+           {:on-click #(reset! share-dialog-open false)}
+           "Cancel"]]]]])))
 
 (defn not-found []
   [p "Route not found!"])

@@ -8,33 +8,34 @@
     (fn [{:keys [on-item-added on-item-removed on-item-moved-up on-item-moved-down label-fn items]
           :or {label-fn identity}}]
       [:div.editable-list
-       [:ul.uk-list.uk-list-striped
-        (->> items
-             (map-indexed (fn [idx item]
-                            ^{:key item}
-                            [:li.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle
-                             [:span {:style {:overflow-x "auto"}}
-                              (-> (label-fn item)
-                                  (utils/highlight-links (fn [url]
-                                                           [:a
-                                                            {:href url
-                                                             :target "_blank"}
-                                                            url])))]
-                             [:span
-                              (when on-item-removed
-                                [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
-                                 {:on-click (partial on-item-removed item)}
-                                 [:i.zmdi.zmdi-delete]])
-                              (when on-item-moved-up
-                                [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
-                                 {:on-click (partial on-item-moved-up item)
-                                  :disabled (zero? idx)}
-                                 [:i.zmdi.zmdi-chevron-up]])
-                              (when on-item-moved-down
-                                [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
-                                 {:on-click (partial on-item-moved-down item)
-                                  :disabled (= idx (dec (count items)))}
-                                 [:i.zmdi.zmdi-chevron-down]])]])))]
+       (when (seq items)
+         [:ul.uk-list.uk-list-striped
+          (->> items
+               (map-indexed (fn [idx item]
+                              ^{:key item}
+                              [:li.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle
+                               [:span {:style {:overflow-x "auto"}}
+                                (-> (label-fn item)
+                                    (utils/highlight-links (fn [url]
+                                                             [:a
+                                                              {:href url
+                                                               :target "_blank"}
+                                                              url])))]
+                               [:span
+                                (when on-item-removed
+                                  [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
+                                   {:on-click (partial on-item-removed item)}
+                                   [:i.zmdi.zmdi-delete]])
+                                (when on-item-moved-up
+                                  [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
+                                   {:on-click (partial on-item-moved-up item)
+                                    :disabled (zero? idx)}
+                                   [:i.zmdi.zmdi-chevron-up]])
+                                (when on-item-moved-down
+                                  [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
+                                   {:on-click (partial on-item-moved-down item)
+                                    :disabled (= idx (dec (count items)))}
+                                   [:i.zmdi.zmdi-chevron-down]])]])))])
        (when on-item-added
          [:div.uk-flex.uk-flex-row
           [:input.uk-input

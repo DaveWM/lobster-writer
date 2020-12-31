@@ -43,11 +43,39 @@
     [:&:last-child {:margin-bottom "0"}]]
    [:&__sentence {:text-indent "20px"}]
    [:&__code {:margin-left "20px"}]]
-  [:ul.sidebar {:background-color (gc/lighten palette-1 60)
-              :padding "15px"
-              :margin "0 20px"
-              :border-radius "8px"}]
+  [:.sidebar {:background-color palette-2
+              :padding "5px"
+              :margin "0"
+              :border-radius "8px"
+              :flex 1}
+   [:&__header {:color "white"}]
+   [:&__list {:display :flex
+              :flex-direction :column
+              :padding-left "10px"
+              :border-left [["3px" "solid" palette-1]]}]
+   [:&__step {:color "white"
+              :margin-bottom "15px"
+              :border-radius "8px"}
+    [:&:hover {:color "white"}]
+    [:&--active {:color palette-1}
+     [:&:hover {:color palette-1}]]
+    [:&--disabled {:opacity 0.5}
+     [:&:hover {:text-decoration "none"
+                :color "white"
+                :cursor "default"}]]]]
+  [:.step {:display :flex
+           :flex-direction :column
+           :align-items :flex-start}]
   [:.dm-logo
    [:img {:max-height "26px"}]]
   [:#app-bar {:background-color palette-2
-              :color "white"}])
+              :color "white"}]
+  [:.next-step {:margin-top "15px !important"}]
+  [:.essay__header {:margin-bottom "20px"}]
+  [:.topic-selection {:width "100%"
+                      :max-width "500px"}
+   [:&__item {:padding "15px"
+              :cursor "pointer"
+              :border-left [["2px" "solid" "transparent"]]}
+    [:&--selected {:border-left [["2px" "solid" palette-5]]}]
+    [:&:hover {:border-left [["2px" "solid" palette-1]]}]]])
