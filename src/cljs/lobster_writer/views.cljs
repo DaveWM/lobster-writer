@@ -7,7 +7,6 @@
     [lobster-writer.utils :as utils]
     [lobster-writer.constants :as constants]
     [lobster-writer.components.helpers :refer [essay-display next-step]]
-    [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button radio-button modal-panel alert-box]]
     [clojure.string :as s]
     [reagent.core :as r]
     [cljsjs.prop-types]
@@ -203,7 +202,7 @@
                             {:default-value (:v1 (:paragraph section))
                              :on-change #(re-frame/dispatch [::events/outline-paragraph-updated (:heading section) (utils/ev-val %)])
                              :rows 8}]
-                           [p "You have written "
+                           [:p "You have written "
                             [:b (count (get-in section [:sentences :v1]))]
                             " sentences, and "
                             [:b (-> (get-in section [:paragraph :v1]) (utils/words) count)]
@@ -271,7 +270,7 @@
                 (map (fn [section]
                        [:div
                         [:h5 (:heading section)]
-                        [p (->> (get-in section [:sentences :v2])
+                        [:p (->> (get-in section [:sentences :v2])
                                 (map utils/mask-code)
                                 (utils/join-sentences))]
                         [editable-list {:items (->> (get-in section [:sentences :v2])
@@ -414,9 +413,9 @@
        [:div#share-modal {"uk-modal" "true"}
         [:div.uk-modal-dialog.uk-modal-body
          [:h3 "Share Essay"]
-         [p
+         [:p
           "This will share your essay by uploading it to " [:a {:href "https://pastebin.com" :target "_blank"} "PasteBin"] "."]
-         [p
+         [:p
           "If you enter an encryption key, nobody will be able to view your essay without the password.
            It is recommended to use 4 random words for this password, like \"correct-horse-battery-staple\"."]
          [:label {:for "password"}
@@ -434,10 +433,10 @@
            "Cancel"]]]]])))
 
 (defn not-found []
-  [p "Route not found!"])
+  [:p "Route not found!"])
 
 (defn import-essay []
-  [p "Importing..."])
+  [:p "Importing..."])
 
 (defn pages [page]
   (let [page-component (case page
@@ -495,4 +494,4 @@
            (:body alert)])]
        [pages @*active-page]]
       [:div#saving-indicator
-       [md-icon-button :md-icon-name "zmdi-floppy" :size :larger]]]]))
+       [:span {"uk-icon" "icon: pencil; ratio: 1.5"}]]]]))

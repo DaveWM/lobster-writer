@@ -29,7 +29,7 @@
                             [(str percentage-done "%") {:opacity opacity}]))))
   [:.run-saving-animation {:animation "saving-animation 2s linear"}]
   [:#saving-indicator {:position "fixed"
-                       :right "60px"
+                       :right "20px"
                        :bottom "20px"
                        :opacity "0"}]
   [:.progress {:margin-bottom "0 !important"}]

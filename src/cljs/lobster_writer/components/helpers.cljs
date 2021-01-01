@@ -1,6 +1,5 @@
 (ns lobster-writer.components.helpers
-  (:require [re-com.core :refer [p v-box]]
-            [clojure.string :as s]))
+  (:require [clojure.string :as s]))
 
 
 (defn essay-display [section-sentences essay-title]
@@ -15,7 +14,7 @@
                      (mapcat (fn [xs]
                                (if (= (:type (first xs)) :sentence)
                                  (let [s (->> xs (map :value) (map s/trim) (s/join " "))]
-                                   [[p {:class "essay-display__sentence"} s]])
+                                   [[:p {:class "essay-display__sentence"} s]])
                                  (->> xs (map #(-> [:pre {:class "essay-display__code"} (:value %)])))))))])))])
 
 (defn next-step [props]

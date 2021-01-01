@@ -1,5 +1,4 @@
-(ns lobster-writer.components.file-chooser
-  (:require [re-com.core :refer [button]]))
+(ns lobster-writer.components.file-chooser)
 
 (defn file-chooser [props button-child]
   (let [id (str (gensym))]
