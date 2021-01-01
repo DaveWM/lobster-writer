@@ -480,7 +480,7 @@
         {:style {:text-decoration "none"}
          :href "https://github.com/DaveWM/lobster-writer"
          :target "_blank"}
-        [:i.zmdi.zmdi-hc-2x.zmdi-github {"uk-tooltip" "title: GitHub Repo; pos: bottom"}]]
+        [:i.zmdi.zmdi-hc-2x.zmdi-github]]
        [:a.uk-navbar-item.dm-logo {:href "https://davemartin.me" :target "_blank"}
         [:img {:src "/images/dmp-logo.png"}]]]]
      [:div.uk-section
@@ -494,4 +494,4 @@
            (:body alert)])]
        [pages @*active-page]]
       [:div#saving-indicator
-       [:span {"uk-icon" "icon: pencil; ratio: 1.5"}]]]]))
+       [:i.zmdi.zmdi-hc-2x.zmdi-floppy]]]]))
