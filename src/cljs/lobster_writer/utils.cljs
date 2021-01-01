@@ -121,3 +121,6 @@
 (defn add-alert [db id alert]
   (-> db
       (assoc-in [:alerts id] (assoc alert :id id))))
+
+(defn ev-val [ev]
+  (-> ev .-target .-value))

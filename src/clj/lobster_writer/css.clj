@@ -12,8 +12,7 @@
 (def palette-5 "#00ABE7")
 
 (defstyles screen
-  [:.quill {:width "600px"
-            :min-height "250px"
+  [:.quill {:min-height "250px"
             :display "flex"
             :flex-direction "column"}]
   [:.ql-toolbar {:min-height "40px"}]
@@ -35,10 +34,7 @@
                        :opacity "0"}]
   [:.progress {:margin-bottom "0 !important"}]
   [:.rc-progress-bar-wrapper {:width "100%"}]
-  [:.essay-display {:border "1px solid black"
-                    :border-radius "8px"
-                    :padding "15px"
-                    :max-width "650px"}
+  [:.essay-display
    [:&__section {:margin-bottom "25px"}
     [:&:last-child {:margin-bottom "0"}]]
    [:&__sentence {:text-indent "20px"}]
@@ -65,17 +61,21 @@
                 :cursor "default"}]]]]
   [:.step {:display :flex
            :flex-direction :column
-           :align-items :flex-start}]
+           :align-items :stretch}]
   [:.dm-logo
-   [:img {:max-height "26px"}]]
+   [:img {:max-height "20px"}]]
   [:#app-bar {:background-color palette-2
-              :color "white"}]
+              :color "white"}
+   [:.app-bar__title {:font-size "40px"
+                      :font-weight 200
+                      :color "white"
+                      :padding-right "12px"
+                      :border-bottom "1px solid rgb(255,255,255,0.6)"}]]
   [:.next-step {:margin-top "15px !important"}]
-  [:.essay__header {:margin-bottom "20px"}]
-  [:.topic-selection {:width "100%"
-                      :max-width "500px"}
+  [:.essay__header {:margin-bottom "15px"}]
+  [:.topic-selection
    [:&__item {:padding "15px"
               :cursor "pointer"
               :border-left [["2px" "solid" "transparent"]]}
-    [:&--selected {:border-left [["2px" "solid" palette-5]]}]
-    [:&:hover {:border-left [["2px" "solid" palette-1]]}]]])
+    [:&--selected {:border-left [["2px" "solid" palette-1]]}]
+    [:&:hover {:border-left [["2px" "solid" palette-5]]}]]])

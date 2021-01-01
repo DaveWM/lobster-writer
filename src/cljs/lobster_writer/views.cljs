@@ -6,7 +6,7 @@
     [lobster-writer.components.editable-list :refer [editable-list]]
     [lobster-writer.utils :as utils]
     [lobster-writer.constants :as constants]
-    [lobster-writer.components.helpers :refer [essay-display]]
+    [lobster-writer.components.helpers :refer [essay-display next-step]]
     [re-com.core :refer [progress-bar button title p v-box h-box gap label line hyperlink-href hyperlink input-text h-split v-split input-textarea box scroller md-icon-button md-circle-icon-button radio-button modal-panel alert-box]]
     [clojure.string :as s]
     [reagent.core :as r]
@@ -62,7 +62,7 @@
      [:div.uk-flex
       [:button.uk-button.uk-button-primary {:on-click #(re-frame/dispatch [::events/start-new-essay])} "New Essay"]
       [file-chooser {:accept ".edn"
-                     :on-change #(re-frame/dispatch [::events/import-requested %])}
+                     :on-change #(re-frame/dispatch [::events/import-requested (utils/ev-val %)])}
        [:span "Import " [:i.zmdi.zmdi-hc-fw-rc.zmdi-upload]]]]]))
 
 
@@ -139,10 +139,10 @@
      [quill {:default-value (:notes current-essay)
              :on-change (fn [html _ _ editor]
                           (re-frame/dispatch [::events/in-app-notes-updated html (.call (aget editor "getText"))]))}]
-     [input-text
-      :model (:external-notes-url current-essay)
-      :on-change #(re-frame/dispatch [::events/external-notes-url-updated %])
-      :placeholder "Enter the URL of your notes here"])
+     [:input.uk-input
+      {:default-value (:external-notes-url current-essay)
+       :on-blur #(re-frame/dispatch [::events/external-notes-url-updated (utils/ev-val %)])
+       :placeholder "Enter the URL of your notes here"}])
    [:button.uk-button.uk-button-primary.next-step
     {:disabled (empty? (:reading-list current-essay))
      :on-click #(re-frame/dispatch [::events/next-step])}
@@ -158,247 +158,224 @@
          (map #(-> [:li.topic-selection__item {:class (when (= % (:title current-essay)) "topic-selection__item--selected")
                                                :on-click (partial re-frame/dispatch [::events/topic-selected %])}
                     %])))]
-   [label :label "Target Essay Length"]
-   [input-text
-    :model (str (:target-length current-essay))
-    :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int %)])
-    :change-on-blur? false]
+   [:label.uk-form-label {:for "target-essay-length"}
+    "Target Essay Length"]
+   [:input#target-essay-length.uk-input
+    {:default-value (str (:target-length current-essay))
+     :on-change #(re-frame/dispatch [::events/essay-target-length-changed (utils/parse-int (utils/ev-val %))])}]
    [:button.uk-button.uk-button-primary.next-step
     {:disabled (not (and (contains? (:candidate-topics current-essay) (:title current-essay))
-                          (:target-length current-essay)))
+                         (:target-length current-essay)))
      :on-click #(re-frame/dispatch [::events/next-step])}
     "Next Step"]])
 
 
 (defn outline [current-essay]
   (let [min-sentences (min 15 (int (/ (:target-length current-essay) 100)))]
-    [v-box
-     :children [[p "It's now time to write the outline of your essay. You need to write "
-                 [:b min-sentences] " headings, one per 100 words of your essay (up to 15 headings)."]
-                [gap :size "15px"]
-                [editable-list {:items (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
-                                :label-fn :heading
-                                :on-item-added #(re-frame/dispatch [::events/outline-heading-added %])
-                                :on-item-removed #(re-frame/dispatch [::events/outline-heading-removed (:heading %)])
-                                :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
-                                :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
-                [gap :size "5px"]
-                [p "You have written " [:b (count (:outline current-essay))] " headings out of " [:b min-sentences] "."]
-                [gap :size "15px"]
-                [button
-                 :disabled? (> 0 (count (:outline current-essay)))
-                 :class "btn-primary"
-                 :label "Next Step"
-                 :on-click #(re-frame/dispatch [::events/next-step])]]]))
+    [:div.step
+     [:p "It's now time to write the outline of your essay. You need to write "
+      [:b min-sentences] " headings, one per 100 words of your essay (up to 15 headings)."]
+     [editable-list {:items (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                     :label-fn :heading
+                     :on-item-added #(re-frame/dispatch [::events/outline-heading-added %])
+                     :on-item-removed #(re-frame/dispatch [::events/outline-heading-removed (:heading %)])
+                     :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
+                     :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
+     [:p "You have written " [:b (count (:outline current-essay))] " headings out of " [:b min-sentences] "."]
+     [:button.uk-button.uk-button-primary.next-step
+      {:disabled (zero? (count (:outline current-essay)))
+       :on-click #(re-frame/dispatch [::events/next-step])}
+      "Next Step"]]))
 
 
 (defn outline-paragraphs [current-essay]
-  [v-box
-   :children (concat [[p "Aim to write about " [:b "10 to 15"] " sentences per outline heading."
-                       "You can write more or less if you want."]
-                      [p "You can use triple-backticks (```) to mark out code blocks, e.g. ```1 + 1```."]
-                      [p "To review your notes, " [hyperlink :label "click here." :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])]]]
-                     (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
-                          (mapcat (fn [section]
-                                    [[title :level :level3 :label (:heading section)]
-                                     [input-textarea
-                                      :model (:v1 (:paragraph section))
-                                      :change-on-blur? false
-                                      :on-change #(re-frame/dispatch [::events/outline-paragraph-updated (:heading section) %])
-                                      :rows 8
-                                      :width "650px"]
-                                     [p "You have written "
-                                      [:b (count (get-in section [:sentences :v1]))]
-                                      " sentences, and "
-                                      [:b (-> (get-in section [:paragraph :v1]) (utils/words) count)]
-                                      " words."]])))
-                     [[p
-                       "You have written "
-                       (->> (:outline current-essay)
-                            vals
-                            (map (comp :v1 :paragraph))
-                            (mapcat utils/words)
-                            count)
-                       " words, out of a target number of "
-                       (:target-length current-essay)
-                       " (aim for 25% above the target, " (int (* 1.25 (:target-length current-essay))) ")"]
-                      [button
-                       :disabled? (not-every? (comp #(not (s/blank? (:v1 (:paragraph %)))) val) (:outline current-essay))
-                       :class "btn-primary"
-                       :label "Next Step"
-                       :on-click #(re-frame/dispatch [::events/next-step])]])])
+  [:div.step
+   (concat [[:p "Aim to write about " [:b "10 to 15"] " sentences per outline heading."
+             "You can write more or less if you want."]
+            [:p "You can use triple-backticks (```) to mark out code blocks, e.g. ```1 + 1```."]
+            [:p "To review your notes, "
+             [:a {:on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])}
+              "click here."]]]
+           (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                (mapcat (fn [section]
+                          [[:h5 (:heading section)]
+                           [:textarea.uk-textarea
+                            {:default-value (:v1 (:paragraph section))
+                             :on-change #(re-frame/dispatch [::events/outline-paragraph-updated (:heading section) (utils/ev-val %)])
+                             :rows 8}]
+                           [p "You have written "
+                            [:b (count (get-in section [:sentences :v1]))]
+                            " sentences, and "
+                            [:b (-> (get-in section [:paragraph :v1]) (utils/words) count)]
+                            " words."]])))
+           [[:p
+             "You have written "
+             (->> (:outline current-essay)
+                  vals
+                  (map (comp :v1 :paragraph))
+                  (mapcat utils/words)
+                  count)
+             " words, out of a target number of "
+             (:target-length current-essay)
+             " (aim for 25% above the target, " (int (* 1.25 (:target-length current-essay))) ")"]
+            [:button.uk-button.uk-button-primary.next-step
+             {:disabled (not-every? (comp #(not (s/blank? (:v1 (:paragraph %)))) val) (:outline current-essay))
+              :on-click #(re-frame/dispatch [::events/next-step])}
+             "Next Step"]])])
 
 
 (defn rewrite-sentences [current-essay]
-  [v-box
-   :children (concat [[p
-                       "Re-write all the sentences you wrote in the previous step. "
-                       "If you can't improve on a sentence, just copy and paste it into the input box."
-                       "If you want to completely remove a sentence, leave the input box blank."]]
-                     (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
-                          (map (fn [section]
-                                 [v-box
-                                  :children [[title :level :level3 :label (:heading section)]
-                                             (->> (get-in section [:sentences :v1])
-                                                  (map-indexed (fn [idx v1]
-                                                                 [idx v1 (get-in section [:sentences :v2 idx])]))
-                                                  (mapcat (fn [[idx v1 v2]]
-                                                            (let [label (if (= (:type v1) :sentence)
-                                                                          (:value v1)
-                                                                          "Code Block")]
-                                                              [[title :level :level4 :label label]
-                                                               [input-textarea
-                                                                :rows 3
-                                                                :width "700px"
-                                                                :model (:value v2)
-                                                                :on-change #(re-frame/dispatch [::events/sentence-rewritten (:heading section) idx %])]
-                                                               [gap :size "5px"]]))))]])))
-                     [[p
-                       "You have written "
-                       (->> (:outline current-essay)
-                            vals
-                            (map (comp utils/join-sentences :v2 :sentences))
-                            (mapcat utils/words)
-                            count)
-                       " words, out of a target number of "
-                       (:target-length current-essay)
-                       " (aim for 25% above the target, " (int (* 1.25 (:target-length current-essay))) ")"]
-                      [gap :size "15px"]
-                      [button
-                       :disabled? (->> (get-in current-essay [:outline])
-                                       (mapcat (comp :v2 :sentences val))
-                                       (every? (comp s/blank? :value)))
-                       :class "btn-primary"
-                       :label "Next Step"
-                       :on-click #(re-frame/dispatch [::events/next-step])]])])
+  [:div.step
+   (concat [[:p
+             "Re-write all the sentences you wrote in the previous step. "
+             "If you can't improve on a sentence, just copy and paste it into the input box."
+             "If you want to completely remove a sentence, leave the input box blank."]]
+           (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                (map (fn [section]
+                       [:div
+                        [:h5 (:heading section)]
+                        (->> (get-in section [:sentences :v1])
+                             (map-indexed (fn [idx v1]
+                                            [idx v1 (get-in section [:sentences :v2 idx])]))
+                             (mapcat (fn [[idx v1 v2]]
+                                       (let [label (if (= (:type v1) :sentence)
+                                                     (:value v1)
+                                                     "Code Block")]
+                                         [[:h6 label]
+                                          [:textarea.uk-textarea
+                                           {:rows 3
+                                            :default-value (:value v2)
+                                            :on-change #(re-frame/dispatch [::events/sentence-rewritten (:heading section) idx (utils/ev-val %)])}]]))))])))
+           [[:p
+             "You have written "
+             (->> (:outline current-essay)
+                  vals
+                  (map (comp utils/join-sentences :v2 :sentences))
+                  (mapcat utils/words)
+                  count)
+             " words, out of a target number of "
+             (:target-length current-essay)
+             " (aim for 25% above the target, " (int (* 1.25 (:target-length current-essay))) ")"]
+            [:button.uk-button.uk-button-primary.next-step
+             {:disabled (->> (get-in current-essay [:outline])
+                             (mapcat (comp :v2 :sentences val))
+                             (every? (comp s/blank? :value)))
+              :on-click #(re-frame/dispatch [::events/next-step])}
+             "Next Step"]])])
 
 
 (defn reorder-sentences [current-essay]
-  [v-box
-   :children (concat [[p "Try re-ordering the sentences within each paragraph."]]
-                     (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
-                          (map (fn [section]
-                                 [v-box
-                                  :children [[title :level :level3 :label (:heading section)]
-                                             [p (->> (get-in section [:sentences :v2])
-                                                     (map utils/mask-code)
-                                                     (utils/join-sentences))]
-                                             [editable-list {:items (->> (get-in section [:sentences :v2])
-                                                                         (map utils/mask-code)
-                                                                         (map :value)
-                                                                         (map-indexed vector))
-                                                             :label-fn second
-                                                             :on-item-moved-up (fn [[i _]]
-                                                                                 (re-frame/dispatch [::events/sentence-moved-up (:heading section) i]))
-                                                             :on-item-moved-down (fn [[i _]]
-                                                                                   (re-frame/dispatch [::events/sentence-moved-down (:heading section) i]))}]]])))
-                     [[gap :size "15px"]
-                      [button
-                       :class "btn-primary"
-                       :label "Next Step"
-                       :on-click #(re-frame/dispatch [::events/next-step])]])])
+  [:div.step
+   (concat [[:p "Try re-ordering the sentences within each paragraph."]]
+           (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                (map (fn [section]
+                       [:div
+                        [:h5 (:heading section)]
+                        [p (->> (get-in section [:sentences :v2])
+                                (map utils/mask-code)
+                                (utils/join-sentences))]
+                        [editable-list {:items (->> (get-in section [:sentences :v2])
+                                                    (map utils/mask-code)
+                                                    (map :value)
+                                                    (map-indexed vector))
+                                        :label-fn second
+                                        :on-item-moved-up (fn [[i _]]
+                                                            (re-frame/dispatch [::events/sentence-moved-up (:heading section) i]))
+                                        :on-item-moved-down (fn [[i _]]
+                                                              (re-frame/dispatch [::events/sentence-moved-down (:heading section) i]))}]])))
+           [[:button.uk-button.uk-button-primary.next-step
+             {:on-click #(re-frame/dispatch [::events/next-step])}
+             "Next Step"]])])
 
 
 (defn reorder-paragraphs [current-essay]
   (let [ordered-sections (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))]
-    [v-box
-     :children [[p "If you want to, re-order the paragraphs."]
-                [gap :size "10px"]
-                [editable-list {:items ordered-sections
-                                :label-fn #(->> (get-in % [:sentences :v2])
-                                                (map utils/mask-code)
-                                                (utils/join-sentences))
-                                :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
-                                :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
-                [title :level :level3 :label "Essay"]
-                [essay-display (->> ordered-sections
-                                    (map (comp :v2 :sentences)))]
-                [gap :size "15px"]
-                [button
-                 :class "btn-primary"
-                 :label "Next Step"
-                 :on-click #(re-frame/dispatch [::events/next-step])]]]))
+    [:div.step
+     [:p "If you want to, re-order the paragraphs."]
+     [editable-list {:items ordered-sections
+                     :label-fn #(->> (get-in % [:sentences :v2])
+                                     (map utils/mask-code)
+                                     (utils/join-sentences))
+                     :on-item-moved-up #(re-frame/dispatch [::events/paragraph-moved-up %])
+                     :on-item-moved-down #(re-frame/dispatch [::events/paragraph-moved-down %])}]
+     [essay-display
+      (->> ordered-sections
+           (map (comp :v2 :sentences)))
+      (:title current-essay)]
+     [:button.uk-button.uk-button-primary.next-step
+      {:on-click #(re-frame/dispatch [::events/next-step])}
+      "Next Step"]]))
 
 
 (defn read-draft [current-essay]
-  [v-box
-   :children [[p "Read your draft essay. You don't need to memorize it, just read it as you would someone else's essay."]
-              [essay-display (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
-                                  (map (comp :v2 :sentences)))]
-              [gap :size "15px"]
-              [button
-               :class "btn-primary"
-               :label "Next Step"
-               :on-click #(re-frame/dispatch [::events/next-step])]]])
+  [:div.step
+   [:p "Read your draft essay. You don't need to memorize it, just read it as you would someone else's essay."]
+   [essay-display
+    (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+         (map (comp :v2 :sentences)))
+    (:title current-essay)]
+   [:button.uk-button.uk-button-primary.next-step
+    {:on-click #(re-frame/dispatch [::events/next-step])}
+    "Next Step"]])
 
 
 (defn second-outline [current-essay]
   (let [min-sentences (min 15 (int (/ (:target-length current-essay) 100)))]
-    [v-box
-     :children [[p "Now write a new outline. " [:b "Don’t look back at your essay while you are doing this."]]
-                [gap :size "15px"]
-                [editable-list {:items (map key (:second-outline current-essay))
-                                :on-item-added #(re-frame/dispatch [::events/second-outline-heading-added %])
-                                :on-item-removed #(re-frame/dispatch [::events/second-outline-heading-removed %])}]
-                [gap :size "5px"]
-                [p "You have written " [:b (count (:second-outline current-essay))] " headings out of " [:b min-sentences] "."]
-                [gap :size "15px"]
-                [button
-                 :disabled? (zero? (count (:second-outline current-essay)))
-                 :class "btn-primary"
-                 :label "Next Step"
-                 :on-click #(re-frame/dispatch [::events/next-step])]]]))
+    [:div.step
+     [:p "Now write a new outline. " [:b "Don’t look back at your essay while you are doing this."]]
+     [editable-list {:items (map key (:second-outline current-essay))
+                     :on-item-added #(re-frame/dispatch [::events/second-outline-heading-added %])
+                     :on-item-removed #(re-frame/dispatch [::events/second-outline-heading-removed %])}]
+     [:p "You have written " [:b (count (:second-outline current-essay))] " headings out of " [:b min-sentences] "."]
+     [next-step
+      {:disabled (zero? (count (:second-outline current-essay)))
+       :on-click #(re-frame/dispatch [::events/next-step])}]]))
 
 
 (defn copy-from-draft [current-essay]
-  [v-box
-   :children (concat [[p
-                       "Copy from your draft essay into the new outline. "
-                       "You'll get a chance to edit your final essay in the next step, so don't worry about the formatting too much."]
-                      [essay-display (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
-                                          (map (comp :v2 :sentences)))]
-                      [gap :size "15px"]]
-                     (->> (:second-outline current-essay)
-                          (mapcat (fn [[heading section]]
-                                    [[title :level :level3 :label heading]
-                                     [gap :size "5px"]
-                                     [quill {:default-value (:paragraph section)
-                                             :on-change (fn [html _ _ _]
-                                                          (re-frame/dispatch [::events/second-outline-paragraph-updated heading html]))}]
-                                     [gap :size "10px"]])))
-                     [[gap :size "15px"]
-                      [button
-                       :disabled? (not-every? (comp #(not (s/blank? (:paragraph %))) val) (:second-outline current-essay))
-                       :class "btn-primary"
-                       :label "Next Step"
-                       :on-click #(re-frame/dispatch [::events/next-step])]])])
+  [:div.step
+   (concat [[:p
+             "Copy from your draft essay into the new outline. "
+             "You'll get a chance to edit your final essay in the next step, so don't worry about the formatting too much."]
+            [essay-display
+             (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
+                  (map (comp :v2 :sentences)))
+             (:title current-essay)]]
+           (->> (:second-outline current-essay)
+                (mapcat (fn [[heading section]]
+                          [[:h5 heading]
+                           [quill {:default-value (:paragraph section)
+                                   :on-change (fn [html _ _ _]
+                                                (re-frame/dispatch [::events/second-outline-paragraph-updated heading html]))}]])))
+           [[next-step
+             {:disabled? (not-every? (comp #(not (s/blank? (:paragraph %))) val) (:second-outline current-essay))
+              :on-click #(re-frame/dispatch [::events/next-step])}]])])
 
 
 (defn final-essay [current-essay]
-  [scroller
-   :child [v-box
-           :children [[p
-                       "You can now format your final essay, and add citations if you wish. "
-                       "Your reading list is displayed below for you to copy citations from. "
-                       "When you've completed the essay, you can copy and paste it into a Word doc or Google doc."]
-                      [p "To review your notes, " [hyperlink :label "click here." :on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])]]
-                      [quill {:default-value (:final-essay current-essay)
-                              :on-change (fn [html _ _ editor]
-                                           (re-frame/dispatch [::events/final-essay-updated html (.call (aget editor "getText"))]))}]
-                      [p
-                       "You have written "
-                       (:final-essay-word-count current-essay)
-                       " words, out of a target number of "
-                       (:target-length current-essay) "."]]]])
+  [:div.step
+   [:p
+    "You can now format your final essay, and add citations if you wish. "
+    "Your reading list is displayed below for you to copy citations from. "
+    "When you've completed the essay, you can copy and paste it into a Word doc or Google doc."]
+   [:p "To review your notes, " [:a {:on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])} "click here."]]
+   [quill {:default-value (:final-essay current-essay)
+           :on-change (fn [html _ _ editor]
+                        (re-frame/dispatch [::events/final-essay-updated html (.call (aget editor "getText"))]))}]
+   [:p
+    "You have written "
+    (:final-essay-word-count current-essay)
+    " words, out of a target number of "
+    (:target-length current-essay) "."]])
 
 
 (defn essay-step []
   (let [share-dialog-open (r/atom false)
-        encryption-key    (r/atom nil)]
+        encryption-key (r/atom nil)]
     (fn [current-essay page page-component]
       [:div.uk-flex.uk-flex-column.essay
        [:div.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle.essay__header
-        [:h3 {:style {:margin "0.3em 0"}}
+        [:h3
          (:title current-essay)]
         [:div.uk-flex
          [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
@@ -442,12 +419,13 @@
          [p
           "If you enter an encryption key, nobody will be able to view your essay without the password.
            It is recommended to use 4 random words for this password, like \"correct-horse-battery-staple\"."]
-         [:label "Encryption Password"]
-         [:input.uk-input
+         [:label {:for "password"}
+          "Encryption Password"]
+         [:input#password.uk-input
           {:value @encryption-key
            :on-change #(reset! encryption-key (.-value (.-target %)))}]
-         [:label "(Leave blank to share essay unencrypted)"]
-         [:div
+         [:small "(Leave blank to share essay unencrypted)"]
+         [:div.uk-margin-top
           [:button.uk-button.uk-button-primary.uk-modal-close
            {:on-click #(re-frame/dispatch [::events/remote-save-requested (:id current-essay) @encryption-key])}
            "OK"]
@@ -462,23 +440,23 @@
   [p "Importing..."])
 
 (defn pages [page]
-  (let [page-component   (case page
-                           :home home
-                           :about about
-                           :import-essay import-essay
-                           :candidate-topics candidate-topics
-                           :reading-list reading-list
-                           :topic-choice topic-choice
-                           :outline outline
-                           :outline-paragraphs outline-paragraphs
-                           :rewrite-sentences rewrite-sentences
-                           :reorder-sentences reorder-sentences
-                           :reorder-paragraphs reorder-paragraphs
-                           :read-draft read-draft
-                           :second-outline second-outline
-                           :copy-from-draft copy-from-draft
-                           :final-essay final-essay
-                           not-found)
+  (let [page-component (case page
+                         :home home
+                         :about about
+                         :import-essay import-essay
+                         :candidate-topics candidate-topics
+                         :reading-list reading-list
+                         :topic-choice topic-choice
+                         :outline outline
+                         :outline-paragraphs outline-paragraphs
+                         :rewrite-sentences rewrite-sentences
+                         :reorder-sentences reorder-sentences
+                         :reorder-paragraphs reorder-paragraphs
+                         :read-draft read-draft
+                         :second-outline second-outline
+                         :copy-from-draft copy-from-draft
+                         :final-essay final-essay
+                         not-found)
         for-single-essay (not (contains? #{home about import-essay not-found} page-component))]
     (if for-single-essay
       (let [*current-essay (re-frame/subscribe [::subs/current-essay])]
@@ -490,11 +468,12 @@
 
 (defn main-panel []
   (let [*active-page (re-frame/subscribe [::subs/active-page])
-        *alerts      (re-frame/subscribe [::subs/alerts])]
+        *alerts (re-frame/subscribe [::subs/alerts])]
     [:div
      [:div#app-bar.uk-navbar-container.uk-light {"uk-navbar" ""}
       [:div.uk-navbar-left
-       [:a.uk-navbar-item.uk-logo {:href "/"} "Lobster Writer"]]
+       [:div.uk-navbar-item
+        [:a.uk-logo.app-bar__title {:href "/"} "Lobster Writer"]]]
       [:div.uk-navbar-right
        [:a.uk-navbar-item {:href "/"} "Home"]
        [:a.uk-navbar-item {:href "/about"} "About"]
@@ -503,8 +482,8 @@
          :href "https://github.com/DaveWM/lobster-writer"
          :target "_blank"}
         [:i.zmdi.zmdi-hc-2x.zmdi-github {"uk-tooltip" "title: GitHub Repo; pos: bottom"}]]
-       [:a.uk-navbar-item {:class "dm-logo" :href "https://davemartin.me" :target "_blank"}
-        [:img {:src "/images/dm-logo.png"}]]]]
+       [:a.uk-navbar-item.dm-logo {:href "https://davemartin.me" :target "_blank"}
+        [:img {:src "/images/dmp-logo.png"}]]]]
      [:div.uk-section
       [:div.uk-container
        [:div
