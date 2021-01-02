@@ -188,16 +188,19 @@
 
 
 (defn outline-paragraphs [current-essay]
-  [:div.step
-   (concat [[:p "Aim to write about " [:b "10 to 15"] " sentences per outline heading."
+  [:div.step.outline-paragraphs
+   (concat [[:p.outline-paragraphs__explanation
+             "Aim to write about " [:b "10 to 15"] " sentences per outline heading."
              "You can write more or less if you want."]
-            [:p "You can use triple-backticks (```) to mark out code blocks, e.g. ```1 + 1```."]
-            [:p "To review your notes, "
+            [:p.outline-paragraphs__explanation
+             "You can use triple-backticks (```) to mark out code blocks, e.g. ```1 + 1```."]
+            [:p.outline-paragraphs__explanation
+             "To review your notes, "
              [:a {:on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])}
               "click here."]]]
            (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
                 (mapcat (fn [section]
-                          [[:h5 (:heading section)]
+                          [[:h5.uk-margin-small-top (:heading section)]
                            [:textarea.uk-textarea
                             {:default-value (:v1 (:paragraph section))
                              :on-change #(re-frame/dispatch [::events/outline-paragraph-updated (:heading section) (utils/ev-val %)])
@@ -232,7 +235,7 @@
            (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
                 (map (fn [section]
                        [:div
-                        [:h5 (:heading section)]
+                        [:h5.uk-margin-top (:heading section)]
                         (->> (get-in section [:sentences :v1])
                              (map-indexed (fn [idx v1]
                                             [idx v1 (get-in section [:sentences :v2 idx])]))
@@ -240,7 +243,7 @@
                                        (let [label (if (= (:type v1) :sentence)
                                                      (:value v1)
                                                      "Code Block")]
-                                         [[:h6 label]
+                                         [[:h6.uk-margin-small-top label]
                                           [:textarea.uk-textarea
                                            {:rows 3
                                             :default-value (:value v2)
@@ -269,7 +272,7 @@
            (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
                 (map (fn [section]
                        [:div
-                        [:h5 (:heading section)]
+                        [:h5.uk-margin-top (:heading section)]
                         [:p (->> (get-in section [:sentences :v2])
                                 (map utils/mask-code)
                                 (utils/join-sentences))]

@@ -14,14 +14,14 @@
                (map-indexed (fn [idx item]
                               ^{:key item}
                               [:li.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle
-                               [:span {:style {:overflow-x "auto"}}
+                               [:span.editable-list__label
                                 (-> (label-fn item)
                                     (utils/highlight-links (fn [url]
                                                              [:a
                                                               {:href url
                                                                :target "_blank"}
                                                               url])))]
-                               [:span
+                               [:span.editable-list__actions
                                 (when on-item-removed
                                   [:button.uk-button.uk-button-default.uk-button-rounded.uk-button-small
                                    {:on-click (partial on-item-removed item)}

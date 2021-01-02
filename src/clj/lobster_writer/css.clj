@@ -84,4 +84,11 @@
               :cursor "pointer"
               :border-left [["2px" "solid" "transparent"]]}
     [:&--selected {:border-left [["2px" "solid" palette-1]]}]
-    [:&:hover {:border-left [["2px" "solid" palette-5]]}]]])
+    [:&:hover {:border-left [["2px" "solid" palette-5]]}]]]
+  [:.editable-list
+   [:&__label {:overflow-x "auto"
+               :margin-right "5px"}]
+   [:&__actions {:display :flex
+                 :flex-wrap :nowrap}]]
+  [:.outline-paragraphs {}
+   [:&__explanation {:margin "0 0 15px 0"}]])
