@@ -367,10 +367,25 @@
     " words, out of a target number of "
     (:target-length current-essay) "."]])
 
+(defn sidebar [current-essay]
+  [:div.sidebar.uk-card.uk-card-body
+   [:h4.sidebar__header "Essay Steps"]
+   [:div.sidebar__list
+    (->> constants/steps
+         (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
+                 ^{:key %}
+                 [:a.sidebar__step
+                  {:href (when enabled (utils/step-url (:id current-essay) %))
+                   :class (str (when (= (:current-step current-essay) %)
+                                 "sidebar__step--active ")
+                               (when-not enabled
+                                 "sidebar__step--disabled "))}
+                  (utils/displayable-step-name %)])))]])
 
 (defn essay-step []
   (let [share-dialog-open (r/atom false)
-        encryption-key (r/atom nil)]
+        encryption-key (r/atom nil)
+        sidebar-open (re-frame/subscribe [::subs/sidebar-open])]
     (fn [current-essay page page-component]
       [:div.uk-flex.uk-flex-column.essay
        [:div.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle.essay__header
@@ -391,24 +406,23 @@
           {"uk-tooltip" "title: Share Essay; pos: bottom"
            "uk-toggle" "target: #share-modal"}
           [:i.zmdi.zmdi-share]]]]
+       [:div.uk-offcanvas {:class (when @sidebar-open "uk-offcanvas-overlay uk-open")
+                           :style {:display :block}}
+        [:div.uk-offcanvas-bar.uk-flex.uk-padding-remove.uk-offcanvas-bar-animation.uk-offcanvas-slide
+         [:button.uk-offcanvas-close {"uk-close" ""
+                                      :on-click #(re-frame/dispatch [::events/sidebar-closed])}]
+         [sidebar current-essay]]]
        [:div {"uk-grid" "true"
               :class "uk-child-width-expand@s"}
-        [:div.uk-width-auto.uk-flex
-         [:div.sidebar.uk-card.uk-card-body
-          [:h4.sidebar__header "Essay Steps"]
-          [:div.sidebar__list
-           (->> constants/steps
-                (map #(let [enabled (utils/step-before-or-equal? % (:highest-step current-essay))]
-                        ^{:key %}
-                        [:a.sidebar__step
-                         {:href (when enabled (utils/step-url (:id current-essay) %))
-                          :class (str (when (= (:current-step current-essay) %)
-                                        "sidebar__step--active ")
-                                      (when-not enabled
-                                        "sidebar__step--disabled "))}
-                         (utils/displayable-step-name %)])))]]]
+        [:div.uk-width-auto.uk-flex {:class "uk-visible@m"}
+         [sidebar current-essay]]
         [:div.uk-width-expand
-         [:h3 (utils/displayable-step-name page)]
+         [:h3
+          (utils/displayable-step-name page)
+          [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded.uk-margin-left
+           {:class "uk-hidden@m"
+            :on-click #(re-frame/dispatch [::events/sidebar-opened])}
+           [:i.zmdi.zmdi-menu]]]
          [page-component current-essay]]]
        [:div#share-modal {"uk-modal" "true"}
         [:div.uk-modal-dialog.uk-modal-body

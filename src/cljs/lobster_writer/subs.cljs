@@ -31,3 +31,9 @@
  ::alerts
  (fn [db _]
    (vals (:alerts db))))
+
+
+(re-frame/reg-sub
+  ::sidebar-open
+  (fn [db _]
+    (:sidebar-open db)))

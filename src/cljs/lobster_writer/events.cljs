@@ -1,19 +1,19 @@
 (ns lobster-writer.events
   (:require
-   [re-frame.core :as rf]
-   [lobster-writer.db :as db]
-   [lobster-writer.effects :as effects]
-   [lobster-writer.coeffects :as coeffects]
-   [lobster-writer.utils :as utils]
-   [lobster-writer.interceptors :as interceptors]
-   [lobster-writer.migrations :as migrations]
-   [lobster-writer.routes :as routes]
-   [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
-   [clojure.string :as s]
-   [cemerick.url :as url]
-   [ajax.core :as ajax]
-   [cljsjs.crypto-js]
-   [bidi.bidi :as bidi]))
+    [re-frame.core :as rf]
+    [lobster-writer.db :as db]
+    [lobster-writer.effects :as effects]
+    [lobster-writer.coeffects :as coeffects]
+    [lobster-writer.utils :as utils]
+    [lobster-writer.interceptors :as interceptors]
+    [lobster-writer.migrations :as migrations]
+    [lobster-writer.routes :as routes]
+    [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
+    [clojure.string :as s]
+    [cemerick.url :as url]
+    [ajax.core :as ajax]
+    [cljsjs.crypto-js]
+    [bidi.bidi :as bidi]))
 
 
 (rf/reg-event-fx
@@ -39,11 +39,12 @@
                                     :on-success [::remote-import-complete encryption-key]
                                     :on-failure [::remote-call-failed]}}))]
       (merge
-       {:db (cond-> db
-                    true (assoc :active-page active-page)
-                    true (assoc :current-essay-id (:essay-id params))
-                    selected-essay (assoc-in [:essays (:essay-id params) :current-step] active-page))}
-       effects))))
+        {:db (cond-> db
+                     true (assoc :active-page active-page
+                                 :current-essay-id (:essay-id params)
+                                 :sidebar-open false)
+                     selected-essay (assoc-in [:essays (:essay-id params) :current-step] active-page))}
+        effects))))
 
 
 (rf/reg-event-fx
@@ -102,50 +103,50 @@
 
 
 (rf/reg-event-db
- ::reading-list-item-removed
- [interceptors/persist-app-db]
- (fn-traced [db [_ reading-list-item]]
-   (update-in db (conj (utils/current-essay-path db) :reading-list) #(remove (partial = reading-list-item) %))))
+  ::reading-list-item-removed
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ reading-list-item]]
+    (update-in db (conj (utils/current-essay-path db) :reading-list) #(remove (partial = reading-list-item) %))))
 
 
 (rf/reg-event-db
- ::in-app-notes-updated
- [interceptors/persist-app-db]
- (fn-traced [db [_ new-notes]]
-   (assoc-in db (conj (utils/current-essay-path db) :notes) new-notes)))
+  ::in-app-notes-updated
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ new-notes]]
+    (assoc-in db (conj (utils/current-essay-path db) :notes) new-notes)))
 
 
 (rf/reg-event-db
- ::external-notes-url-updated
- [interceptors/persist-app-db]
- (fn-traced [db [_ notes-url-str]]
-   (let [notes-url (as-> (url/url notes-url-str) $
-                         (assoc $ :protocol (if (s/blank? (:protocol $)) "http" (:protocol $))))]
-     (assoc-in db
-               (conj (utils/current-essay-path db) :external-notes-url)
-               (if (s/blank? notes-url-str)
-                 nil
-                 (str notes-url))))))
+  ::external-notes-url-updated
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ notes-url-str]]
+    (let [notes-url (as-> (url/url notes-url-str) $
+                          (assoc $ :protocol (if (s/blank? (:protocol $)) "http" (:protocol $))))]
+      (assoc-in db
+                (conj (utils/current-essay-path db) :external-notes-url)
+                (if (s/blank? notes-url-str)
+                  nil
+                  (str notes-url))))))
 
 
 (rf/reg-event-db
- ::notes-type-updated
- [interceptors/persist-app-db]
- (fn-traced [db [_ notes-type]]
-   (assoc-in db (conj (utils/current-essay-path db) :notes-type) notes-type)))
+  ::notes-type-updated
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ notes-type]]
+    (assoc-in db (conj (utils/current-essay-path db) :notes-type) notes-type)))
 
 
 (rf/reg-event-fx
- ::view-notes-requested
- [interceptors/persist-app-db]
- (fn-traced [{:keys [db]} [_ essay-id]]
-   (let [{:keys [title notes notes-type external-notes-url]} (get-in db [:essays essay-id])]
-     (merge {:db db}
-            (if (= notes-type :in-app)
-              {::effects/open-dialog {:title (str "Notes: " title)
-                                      :body notes}}
-              {::effects/open-external-url {:url external-notes-url
-                                            :new-tab true}})))))
+  ::view-notes-requested
+  [interceptors/persist-app-db]
+  (fn-traced [{:keys [db]} [_ essay-id]]
+    (let [{:keys [title notes notes-type external-notes-url]} (get-in db [:essays essay-id])]
+      (merge {:db db}
+             (if (= notes-type :in-app)
+               {::effects/open-dialog {:title (str "Notes: " title)
+                                       :body notes}}
+               {::effects/open-external-url {:url external-notes-url
+                                             :new-tab true}})))))
 
 
 (rf/reg-event-fx
@@ -153,7 +154,7 @@
   [interceptors/persist-app-db]
   (fn-traced [{:keys [db]} _]
     (let [current-essay (get-in db (utils/current-essay-path db))
-          next-step     (utils/next-step (:current-step current-essay))]
+          next-step (utils/next-step (:current-step current-essay))]
       {::effects/navigate {:url (utils/step-url (:id current-essay) next-step)}
        :db (if (utils/step-after? next-step (:highest-step current-essay))
              (assoc-in db (conj (utils/current-essay-path db) :highest-step) next-step)
@@ -316,88 +317,98 @@
 
 
 (rf/reg-event-fx
- ::import-requested
- (fn-traced [{:keys [db]} [_ file]]
-   {:db db
-    ::effects/read-file {:file file
-                         :on-success #(rf/dispatch [::imported-file-read %])}}))
+  ::import-requested
+  (fn-traced [{:keys [db]} [_ file]]
+    {:db db
+     ::effects/read-file {:file file
+                          :on-success #(rf/dispatch [::imported-file-read %])}}))
 
 (rf/reg-event-db
- ::imported-file-read
- (fn-traced [db [_ content]]
-   (when-let [imported-essay (cljs.reader/read-string content)]
-     (assoc-in db [:essays (:id imported-essay)] (migrations/migrate imported-essay)))))
+  ::imported-file-read
+  (fn-traced [db [_ content]]
+    (when-let [imported-essay (cljs.reader/read-string content)]
+      (assoc-in db [:essays (:id imported-essay)] (migrations/migrate imported-essay)))))
 
 (rf/reg-event-fx
- ::remote-save-requested
- (fn-traced [{:keys [db]} [_ essay-id encryption-key]]
-   (let [pastebin-key "35c05becebfcf1c58d397031e9496215"
-         essay (get-in db [:essays essay-id])]
-     {:db db
-      :http-xhrio {:method :post
-                   :uri "https://cors-anywhere.herokuapp.com/https://pastebin.com/api/api_post.php"
-                   :response-format (ajax/text-response-format)
-                   :body (utils/->form-data {:api_dev_key pastebin-key
-                                             :api_option "paste"
-                                             :api_paste_code (if-not (s/blank? encryption-key)
-                                                               {:id essay-id
-                                                                :encrypted-data (-> essay
-                                                                                          prn-str
-                                                                                          (js/CryptoJS.AES.encrypt encryption-key)
-                                                                                          str)}
-                                                               essay)
-                                             :api_paste_name (:title essay)
-                                             :api_paste_private 1
-                                             :api_paste_format "clojure"})
-                   :on-success [::remote-save-complete essay-id encryption-key]
-                   :on-failure [::remote-call-failed]}})))
+  ::remote-save-requested
+  (fn-traced [{:keys [db]} [_ essay-id encryption-key]]
+    (let [pastebin-key "35c05becebfcf1c58d397031e9496215"
+          essay (get-in db [:essays essay-id])]
+      {:db db
+       :http-xhrio {:method :post
+                    :uri "https://cors-anywhere.herokuapp.com/https://pastebin.com/api/api_post.php"
+                    :response-format (ajax/text-response-format)
+                    :body (utils/->form-data {:api_dev_key pastebin-key
+                                              :api_option "paste"
+                                              :api_paste_code (if-not (s/blank? encryption-key)
+                                                                {:id essay-id
+                                                                 :encrypted-data (-> essay
+                                                                                     prn-str
+                                                                                     (js/CryptoJS.AES.encrypt encryption-key)
+                                                                                     str)}
+                                                                essay)
+                                              :api_paste_name (:title essay)
+                                              :api_paste_private 1
+                                              :api_paste_format "clojure"})
+                    :on-success [::remote-save-complete essay-id encryption-key]
+                    :on-failure [::remote-call-failed]}})))
 
 (rf/reg-event-fx
- ::remote-save-complete
- [interceptors/persist-app-db (rf/inject-cofx ::coeffects/id-generator) (rf/inject-cofx ::coeffects/host)]
- (fn-traced [{:keys [db] :as cfx} [_ essay-id encryption-key response]]
-   (let [remote-url (s/replace response #"pastebin.com/" "pastebin.com/raw/") ; pastebin returns the wrong url, have to manually fix it)
-         sharing-url (-> (str (::coeffects/host cfx) (bidi.bidi/path-for routes/app-routes :import-essay))
-                         (url/url)
-                         (assoc :query {:uri remote-url
-                                        :encryption-key encryption-key})
-                         str)
-         essay (get-in db [:essays essay-id])]
-     {:db (-> db
-              (utils/add-alert
+  ::remote-save-complete
+  [interceptors/persist-app-db (rf/inject-cofx ::coeffects/id-generator) (rf/inject-cofx ::coeffects/host)]
+  (fn-traced [{:keys [db] :as cfx} [_ essay-id encryption-key response]]
+    (let [remote-url (s/replace response #"pastebin.com/" "pastebin.com/raw/") ; pastebin returns the wrong url, have to manually fix it)
+          sharing-url (-> (str (::coeffects/host cfx) (bidi.bidi/path-for routes/app-routes :import-essay))
+                          (url/url)
+                          (assoc :query {:uri remote-url
+                                         :encryption-key encryption-key})
+                          str)
+          essay (get-in db [:essays essay-id])]
+      {:db (-> db
+               (utils/add-alert
+                 ((::coeffects/id-generator cfx))
+                 {:body [:span (str "\"" (:title essay) "\" Sharing URL: ") [:a {:href sharing-url} sharing-url]]}))})))
+
+(rf/reg-event-fx
+  ::remote-import-complete
+  [interceptors/persist-app-db (rf/inject-cofx ::coeffects/id-generator)]
+  (fn-traced [{:keys [db] :as cfx} [_ encryption-key response]]
+    (let [response-data (cljs.reader/read-string response)
+          new-essay (-> (if (s/blank? encryption-key)
+                          response-data
+                          (-> (js/CryptoJS.AES.decrypt (:encrypted-data response-data) encryption-key)
+                              (.toString (.-Utf8 js/CryptoJS.enc))
+                              (cljs.reader/read-string)))
+                        (migrations/migrate))]
+      {:db (-> db
+               (assoc-in [:essays (:id response-data)] new-essay)
+               (utils/add-alert ((::coeffects/id-generator cfx))
+                                {:body (str "Successfully imported \"" (:title new-essay) "\"")}))
+       ::effects/navigate {:url "/"}})))
+
+(rf/reg-event-fx
+  ::remote-call-failed
+  [interceptors/persist-app-db (rf/inject-cofx ::coeffects/id-generator)]
+  (fn-traced [{:keys [db] :as cfx} [_ {:keys [uri debug-message status-text]}]]
+    {:db (-> db
+             (utils/add-alert
                ((::coeffects/id-generator cfx))
-               {:body [:span (str "\"" (:title essay) "\" Sharing URL: ") [:a {:href sharing-url} sharing-url]]}))})))
-
-(rf/reg-event-fx
- ::remote-import-complete
- [interceptors/persist-app-db (rf/inject-cofx ::coeffects/id-generator)]
- (fn-traced [{:keys [db] :as cfx} [_ encryption-key response]]
-   (let [response-data (cljs.reader/read-string response)
-         new-essay (-> (if (s/blank? encryption-key)
-                         response-data
-                         (-> (js/CryptoJS.AES.decrypt (:encrypted-data response-data) encryption-key)
-                             (.toString (.-Utf8 js/CryptoJS.enc))
-                             (cljs.reader/read-string)))
-                       (migrations/migrate))]
-     {:db (-> db
-              (assoc-in [:essays (:id response-data)] new-essay)
-              (utils/add-alert ((::coeffects/id-generator cfx))
-                               {:body (str "Successfully imported \"" (:title new-essay) "\"")}))
-      ::effects/navigate {:url "/"}})))
-
-(rf/reg-event-fx
- ::remote-call-failed
- [interceptors/persist-app-db (rf/inject-cofx ::coeffects/id-generator)]
- (fn-traced [{:keys [db] :as cfx} [_ {:keys [uri debug-message status-text]}]]
-   {:db (-> db
-            (utils/add-alert
-             ((::coeffects/id-generator cfx))
-             {:body (str "Remote call failed! Please contact the developer. URL: " uri ", Error message: " (or debug-message status-text))
-              :alert-type :danger}))}))
+               {:body (str "Remote call failed! Please contact the developer. URL: " uri ", Error message: " (or debug-message status-text))
+                :alert-type :danger}))}))
 
 (rf/reg-event-db
- ::close-alert
- [interceptors/persist-app-db]
- (fn-traced [db [_ id]]
-   (-> db
-       (update :alerts #(dissoc % id)))))
+  ::close-alert
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ id]]
+    (-> db
+        (update :alerts #(dissoc % id)))))
+
+(rf/reg-event-db
+  ::sidebar-opened
+  (fn-traced [db _]
+    (assoc db :sidebar-open true)))
+
+(rf/reg-event-db
+  ::sidebar-closed
+  (fn-traced [db _]
+    (assoc db :sidebar-open false)))

@@ -53,8 +53,8 @@
               :margin-bottom "15px"
               :border-radius "8px"}
     [:&:hover {:color "white"}]
-    [:&--active {:color palette-1}
-     [:&:hover {:color palette-1}]]
+    [:&--active {:color [[palette-1 "!important"]]}
+     [:&:hover {:color [[palette-1 "!important"]]}]]
     [:&--disabled {:opacity 0.5}
      [:&:hover {:text-decoration "none"
                 :color "white"
