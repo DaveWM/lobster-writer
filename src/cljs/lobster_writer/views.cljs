@@ -68,7 +68,7 @@
 (defn about []
   [:div
    [:p "Lobster Writer is an application to help you write essays. It is based on the advice of Dr. Jordan Peterson in "
-    [:a {:href "/Jordan-Peterson-Writing-Template.docx"} "this essay writing guide"]
+    [:a {:href "/Jordan-Peterson-Writing-Template.docx" :target "_blank"} "this essay writing guide"]
     ". According to Dr. Peterson, this method will help you \"to write an excellent essay from beginning to end\". "]
    [:p
     "Lobster Writer is free (both gratis and libre) software - you can find the souce code "
