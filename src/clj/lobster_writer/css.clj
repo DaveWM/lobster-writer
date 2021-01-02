@@ -1,6 +1,6 @@
 (ns lobster-writer.css
   (:require [garden.def :refer [defstyles]]
-            [garden.stylesheet :refer [at-keyframes]]
+            [garden.stylesheet :refer [at-keyframes at-media]]
             [garden.color :as gc]))
 
 (def light-gray "#e1e8f0")
@@ -64,13 +64,19 @@
            :align-items :stretch}]
   [:.dm-logo
    [:img {:max-height "20px"}]]
+  (at-media
+    {:max-width "720px"}
+    [:#app-bar {:flex-direction "column"}
+     [:.app-bar__options {:margin 0
+                          :justify-content "center"}]])
   [:#app-bar {:background-color palette-2
               :color "white"}
    [:.app-bar__title {:font-size "40px"
                       :font-weight 200
                       :color "white"
                       :padding-right "12px"
-                      :border-bottom "1px solid rgb(255,255,255,0.6)"}]]
+                      :border-bottom "1px solid rgb(255,255,255,0.6)"
+                      :whitespace :nowrap}]]
   [:.next-step {:margin-top "15px !important"}]
   [:.essay__header {:margin-bottom "15px"}]
   [:.topic-selection

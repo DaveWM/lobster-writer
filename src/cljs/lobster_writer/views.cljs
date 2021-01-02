@@ -389,7 +389,7 @@
     (fn [current-essay page page-component]
       [:div.uk-flex.uk-flex-column.essay
        [:div.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle.essay__header
-        [:h3
+        [:h3.uk-margin-remove
          (:title current-essay)]
         [:div.uk-flex
          [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
@@ -479,24 +479,28 @@
       [page-component])))
 
 
+(defn header []
+  [:div#app-bar.uk-navbar-container.uk-light {"uk-navbar" ""}
+   [:div.uk-navbar-left
+    [:div.uk-navbar-item
+     [:a.uk-logo.app-bar__title {:href "/"} "Lobster Writer"]]]
+   [:div.uk-navbar-right.app-bar__options
+    [:a.uk-navbar-item {:href "/"} "Home"]
+    [:a.uk-navbar-item {:href "/about"} "About"]
+    [:a.uk-navbar-item
+     {:style {:text-decoration "none"}
+      :href "https://github.com/DaveWM/lobster-writer"
+      :target "_blank"}
+     [:i.zmdi.zmdi-hc-2x.zmdi-github]]
+    [:a.uk-navbar-item.dm-logo {:href "https://davemartin.me" :target "_blank"}
+     [:img {:src "/images/dmp-logo.png"}]]]])
+
+
 (defn main-panel []
   (let [*active-page (re-frame/subscribe [::subs/active-page])
         *alerts (re-frame/subscribe [::subs/alerts])]
     [:div
-     [:div#app-bar.uk-navbar-container.uk-light {"uk-navbar" ""}
-      [:div.uk-navbar-left
-       [:div.uk-navbar-item
-        [:a.uk-logo.app-bar__title {:href "/"} "Lobster Writer"]]]
-      [:div.uk-navbar-right
-       [:a.uk-navbar-item {:href "/"} "Home"]
-       [:a.uk-navbar-item {:href "/about"} "About"]
-       [:a.uk-navbar-item
-        {:style {:text-decoration "none"}
-         :href "https://github.com/DaveWM/lobster-writer"
-         :target "_blank"}
-        [:i.zmdi.zmdi-hc-2x.zmdi-github]]
-       [:a.uk-navbar-item.dm-logo {:href "https://davemartin.me" :target "_blank"}
-        [:img {:src "/images/dmp-logo.png"}]]]]
+     [header]
      [:div.uk-section
       [:div.uk-container
        [:div
