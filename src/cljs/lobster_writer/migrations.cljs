@@ -12,16 +12,22 @@
                  (u/map-vals (fn [essay]
                                (-> essay
                                    (update
-                                    :outline
-                                    (fn [outline]
-                                      (->> outline
-                                           (u/map-vals (fn [v]
-                                                         (let [update-sentence #(-> {:type :sentence
-                                                                                     :value %})]
-                                                           (-> v
-                                                               (update-in [:sentences :v1] (partial mapv update-sentence))
-                                                               (update-in [:sentences :v2] (partial mapv update-sentence)))))))))
+                                     :outline
+                                     (fn [outline]
+                                       (->> outline
+                                            (u/map-vals (fn [v]
+                                                          (let [update-sentence #(-> {:type :sentence
+                                                                                      :value %})]
+                                                            (-> v
+                                                                (update-in [:sentences :v1] (partial mapv update-sentence))
+                                                                (update-in [:sentences :v2] (partial mapv update-sentence)))))))))
                                    (assoc :notes-type (or (:notes-type essay) :in-app)))))))))
+
+(defmethod update-db 2 [db]
+  (update db
+          :essays
+          (partial u/map-vals (fn [e]
+                                (assoc e :second-paragraph-order (vec (keys (:second-outline e))))))))
 
 (defmethod update-db :default [db]
   nil)

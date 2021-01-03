@@ -322,16 +322,17 @@
 
 
 (defn second-outline [current-essay]
-  (let [min-sentences (min 15 (int (/ (:target-length current-essay) 100)))]
-    [:div.step
-     [:p "Now write a new outline. " [:b "Don’t look back at your essay while you are doing this."]]
-     [editable-list {:items (map key (:second-outline current-essay))
-                     :on-item-added #(re-frame/dispatch [::events/second-outline-heading-added %])
-                     :on-item-removed #(re-frame/dispatch [::events/second-outline-heading-removed %])}]
-     [:p "You have written " [:b (count (:second-outline current-essay))] " headings out of " [:b min-sentences] "."]
-     [next-step
-      {:disabled (zero? (count (:second-outline current-essay)))
-       :on-click #(re-frame/dispatch [::events/next-step])}]]))
+  [:div.step
+   [:p "Now write a new outline. " [:b "Don’t look back at your essay while you are doing this."]]
+   [editable-list {:items (utils/ordered-by (:second-outline current-essay) (:second-paragraph-order current-essay))
+                   :label-fn :heading
+                   :on-item-added #(re-frame/dispatch [::events/second-outline-heading-added %])
+                   :on-item-removed #(re-frame/dispatch [::events/second-outline-heading-removed (:heading %)])
+                   :on-item-moved-up #(re-frame/dispatch [::events/second-paragraph-moved-up %])
+                   :on-item-moved-down #(re-frame/dispatch [::events/second-paragraph-moved-down %])}]
+   [next-step
+    {:disabled (zero? (count (:second-outline current-essay)))
+     :on-click #(re-frame/dispatch [::events/next-step])}]])
 
 
 (defn copy-from-draft [current-essay]
@@ -343,10 +344,10 @@
              (->> (utils/ordered-by (:outline current-essay) (:paragraph-order current-essay))
                   (map (comp :v2 :sentences)))
              (:title current-essay)]]
-           (->> (:second-outline current-essay)
-                (mapcat (fn [[heading section]]
+           (->> (utils/ordered-by (:second-outline current-essay) (:second-paragraph-order current-essay))
+                (mapcat (fn [{:keys [heading paragraph]}]
                           [[:h5 heading]
-                           [quill {:default-value (:paragraph section)
+                           [quill {:default-value paragraph
                                    :on-change (fn [html _ _ _]
                                                 (re-frame/dispatch [::events/second-outline-paragraph-updated heading html]))}]])))
            [[next-step

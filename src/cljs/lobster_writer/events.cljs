@@ -262,15 +262,18 @@
                (fn [ordering]
                  (utils/move-element ordering (:heading moved-section) 1)))))
 
-
 (rf/reg-event-db
   ::second-outline-heading-added
   [interceptors/persist-app-db]
   (fn-traced [db [_ outline-heading]]
-    (if-not (s/blank? outline-heading)
+    (if-not (or (s/blank? outline-heading)
+                (some? (get-in db (conj (utils/current-essay-path db) :second-outline outline-heading))))
       (-> db
           (assoc-in (conj (utils/current-essay-path db) :second-outline outline-heading) {:heading outline-heading
-                                                                                          :paragraph nil}))
+                                                                                          :paragraph {}
+                                                                                          :sentences {:v1 []
+                                                                                                      :v2 []}})
+          (update-in (conj (utils/current-essay-path db) :second-paragraph-order) conj outline-heading))
       db)))
 
 
@@ -279,7 +282,9 @@
   [interceptors/persist-app-db]
   (fn-traced [db [_ outline-heading]]
     (-> db
-        (update-in (conj (utils/current-essay-path db) :second-outline) dissoc outline-heading))))
+        (update-in (conj (utils/current-essay-path db) :second-outline) dissoc outline-heading)
+        (update-in (conj (utils/current-essay-path db) :second-paragraph-order) (comp vec
+                                                                                      (partial remove #(= % outline-heading)))))))
 
 
 (rf/reg-event-db
@@ -289,11 +294,27 @@
     (-> db
         (assoc-in (conj (utils/current-essay-path db) :second-outline heading :paragraph) updated-paragraph)
         (update-in (utils/current-essay-path db) (fn [current-essay]
-                                                   (let [final-essay (->> (:second-outline current-essay)
-                                                                          vals
-                                                                          (map :paragraph)
+                                                   (let [final-essay (->> (utils/ordered-by (:second-outline current-essay) (:second-paragraph-order current-essay))
+                                                                          (keep :paragraph)
                                                                           (clojure.string/join "<br/>"))]
                                                      (assoc current-essay :final-essay final-essay)))))))
+
+(rf/reg-event-db
+  ::second-paragraph-moved-up
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ moved-section]]
+    (update-in db (conj (utils/current-essay-path db) :second-paragraph-order)
+               (fn [ordering]
+                 (utils/move-element ordering (:heading moved-section) -1)))))
+
+
+(rf/reg-event-db
+  ::second-paragraph-moved-down
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ moved-section]]
+    (update-in db (conj (utils/current-essay-path db) :second-paragraph-order)
+               (fn [ordering]
+                 (utils/move-element ordering (:heading moved-section) 1)))))
 
 
 (rf/reg-event-db
