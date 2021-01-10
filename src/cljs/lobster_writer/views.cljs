@@ -347,12 +347,17 @@
            (->> (utils/ordered-by (:second-outline current-essay) (:second-paragraph-order current-essay))
                 (mapcat (fn [{:keys [heading paragraph]}]
                           [[:h5 heading]
-                           [quill {:default-value paragraph
-                                   :on-change (fn [html _ _ _]
-                                                (re-frame/dispatch [::events/second-outline-paragraph-updated heading html]))}]])))
+                           [:textarea.uk-textarea
+                            {:default-value paragraph
+                             :on-change #(re-frame/dispatch [::events/second-outline-paragraph-updated heading (utils/ev-val %)])
+                             :rows 8}]])))
            [[next-step
              {:disabled? (not-every? (comp #(not (s/blank? (:paragraph %))) val) (:second-outline current-essay))
-              :on-click #(re-frame/dispatch [::events/next-step])}]])])
+              :on-click #(re-frame/dispatch [::events/next-step])}]
+            [:button.uk-button.uk-button-default
+             {:on-click #(re-frame/dispatch [::events/repeat-sentence-rewrite])}
+             [:div.uk-flex.uk-flex-column {"uk-tooltip" "Repeat the process from the 'Outline' step, using the new outline"}
+              "Repeat"]]])])
 
 
 (defn final-essay [current-essay]

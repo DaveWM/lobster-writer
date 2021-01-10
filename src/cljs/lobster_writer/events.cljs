@@ -296,8 +296,26 @@
         (update-in (utils/current-essay-path db) (fn [current-essay]
                                                    (let [final-essay (->> (utils/ordered-by (:second-outline current-essay) (:second-paragraph-order current-essay))
                                                                           (keep :paragraph)
+                                                                          (map #(str "<p>" % "</p>"))
                                                                           (clojure.string/join "<br/>"))]
                                                      (assoc current-essay :final-essay final-essay)))))))
+
+(rf/reg-event-fx
+  ::repeat-sentence-rewrite
+  [interceptors/persist-app-db]
+  (fn-traced [{:keys [db]} _]
+    (let [current-essay (get-in db (utils/current-essay-path db))
+          new-outline (->> (:second-outline current-essay)
+                           (utils/map-vals (fn [second-outline]
+                                             (let [sentences (utils/sentences (:paragraph second-outline))]
+                                               {:heading (:heading second-outline)
+                                                :paragraph {:v1 (:paragraph second-outline)}
+                                                :sentences {:v1 sentences
+                                                            :v2 sentences}}))))]
+      {:db (-> db
+               (assoc-in (conj (utils/current-essay-path db) :outline) new-outline)
+               (assoc-in (conj (utils/current-essay-path db) :paragraph-order) (:second-paragraph-order current-essay)))
+       ::effects/navigate {:url (utils/step-url (:current-essay-id db) :outline)}})))
 
 (rf/reg-event-db
   ::second-paragraph-moved-up
