@@ -270,9 +270,7 @@
                 (some? (get-in db (conj (utils/current-essay-path db) :second-outline outline-heading))))
       (-> db
           (assoc-in (conj (utils/current-essay-path db) :second-outline outline-heading) {:heading outline-heading
-                                                                                          :paragraph {}
-                                                                                          :sentences {:v1 []
-                                                                                                      :v2 []}})
+                                                                                          :paragraph nil})
           (update-in (conj (utils/current-essay-path db) :second-paragraph-order) conj outline-heading))
       db)))
 
