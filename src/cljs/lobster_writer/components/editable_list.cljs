@@ -37,6 +37,7 @@
                                     :disabled (= idx (dec (count items)))}
                                    [:i.zmdi.zmdi-chevron-down]])]])))])
        (when on-item-added
+         ^{:key :input}
          [:div.uk-flex.uk-flex-row
           [:input.uk-input
            {:value @*input-text
