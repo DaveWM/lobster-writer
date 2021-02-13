@@ -1,10 +1,5 @@
-[
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "xyz.appmaker.micphl",
-      "sha256_cert_fingerprints": ["15:9D:97:98:B8:3B:46:D0:8F:53:71:C4:3A:D3:60:56:33:D5:30:2C:42:7D:AD:CD:CE:F0:7A:87:2C:31:C6:85"]
-    }
-  }
-]
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target" : { "namespace": "android_app", "package_name": "uk.co.lobster_writer.twa",
+                   "sha256_cert_fingerprints": ["09:23:FC:94:D9:81:37:84:2A:B3:ED:B0:6C:64:71:14:8F:23:7C:0B:2E:BC:EA:4F:A1:A3:89:11:19:B7:24:0B"] }
+    }]
