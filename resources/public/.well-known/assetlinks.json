@@ -1,5 +1,8 @@
 [{
       "relation": ["delegate_permission/common.handle_all_urls"],
       "target" : { "namespace": "android_app", "package_name": "uk.co.lobster_writer.twa",
-                   "sha256_cert_fingerprints": ["29:0E:C3:AF:46:A9:82:78:05:49:25:4E:E0:CF:B1:C6:77:B5:48:D9:DD:DB:F3:A5:A1:81:C3:70:5B:F5:A8:9A"] }
+                   "sha256_cert_fingerprints": [
+                     "29:0E:C3:AF:46:A9:82:78:05:49:25:4E:E0:CF:B1:C6:77:B5:48:D9:DD:DB:F3:A5:A1:81:C3:70:5B:F5:A8:9A",
+                     "CF:85:67:93:0E:09:D7:32:1B:64:AA:0F:C1:45:A1:38:7C:F6:45:56:17:FC:57:0C:37:B3:F7:4A:56:85:F1:D3"
+                    ] }
     }]
