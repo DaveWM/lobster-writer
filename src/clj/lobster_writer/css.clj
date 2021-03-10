@@ -18,7 +18,8 @@
   [:.ql-toolbar {:min-height "40px"}]
   [:.ql-editor {:flex 1
                 :overflow-y "scroll"
-                :overflow-x "hidden"}]
+                :overflow-x "hidden"}
+   [:em {:color "rgb(102, 102, 102)"}]]
   [:.ql-container {:flex 1
                    :display "flex"
                    :flex-direction "column"}]
