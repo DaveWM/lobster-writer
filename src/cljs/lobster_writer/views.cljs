@@ -367,6 +367,7 @@
     "Your reading list is displayed below for you to copy citations from. "
     "When you've completed the essay, you can copy and paste it into a Word doc or Google doc."]
    [:p "To review your notes, " [:a {:on-click #(re-frame/dispatch [::events/view-notes-requested (:id current-essay)])} "click here."]]
+   [editable-list {:items (:reading-list current-essay)}]
    [quill {:default-value (:final-essay current-essay)
            :on-change (fn [html _ _ editor]
                         (re-frame/dispatch [::events/final-essay-updated html (.call (aget editor "getText"))]))}]
