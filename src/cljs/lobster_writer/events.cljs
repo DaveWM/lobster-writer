@@ -62,6 +62,7 @@
                                              :external-notes-url nil
                                              :outline {}
                                              :paragraph-order []
+                                             :second-paragraph-order []
                                              :final-essay ""
                                              :current-step :candidate-topics
                                              :highest-step :candidate-topics}))
