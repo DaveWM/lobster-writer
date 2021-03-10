@@ -313,7 +313,10 @@
                                                             :v2 sentences}}))))]
       {:db (-> db
                (assoc-in (conj (utils/current-essay-path db) :outline) new-outline)
-               (assoc-in (conj (utils/current-essay-path db) :paragraph-order) (:second-paragraph-order current-essay)))
+               (assoc-in (conj (utils/current-essay-path db) :paragraph-order) (:second-paragraph-order current-essay))
+               (assoc-in (conj (utils/current-essay-path db) :second-outline) {})
+               (assoc-in (conj (utils/current-essay-path db) :second-paragraph-order) [])
+               (assoc-in (conj (utils/current-essay-path db) :highest-step) :outline))
        ::effects/navigate {:url (utils/step-url (:current-essay-id db) :outline)}})))
 
 (rf/reg-event-db
