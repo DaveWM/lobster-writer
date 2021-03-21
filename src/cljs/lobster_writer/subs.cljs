@@ -37,3 +37,10 @@
   ::sidebar-open
   (fn [db _]
     (:sidebar-open db)))
+
+(re-frame/reg-sub
+  ::remote-storage
+  (fn [db _]
+    {:available? (:remote-storage-available db)
+     :uploading? (:remote-storage-uploading db)
+     :downloading? (:remote-storage-downloading db)}))

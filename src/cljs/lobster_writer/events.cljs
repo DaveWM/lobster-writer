@@ -23,7 +23,10 @@
     (let [saved-db (-> (::coeffects/persisted-app-db coeffects)
                        (update :essays #(if (= % '())
                                           {}
-                                          %)))]
+                                          %))
+                       (assoc :remote-storage-available false
+                              :remote-storage-uploading false
+                              :remote-storage-downloading false))]
       {:db (or (migrations/migrate saved-db) db/default-db)})))
 
 (rf/reg-event-fx
@@ -453,3 +456,70 @@
   ::sidebar-closed
   (fn-traced [db _]
     (assoc db :sidebar-open false)))
+
+(rf/reg-event-db
+  ::remote-storage-available
+  (fn-traced [db _]
+    (assoc db :remote-storage-available true)))
+
+(rf/reg-event-fx
+  ::remote-storage-save-requested
+  (fn-traced [{:keys [db]} [_ essay-id]]
+    (if (:remote-storage-available db)
+      (let [{:keys [title] :as essay} (get-in db [:essays essay-id])]
+        {:db (assoc db :remote-storage-uploading true)
+         ::effects/remote-storage-save {:files [{:data essay
+                                                 :path (str title ".edn")}]
+                                        :on-complete ::remote-storage-save-complete}})
+      {:db db})))
+
+(rf/reg-event-fx
+  ::remote-storage-save-all-requested
+  (fn-traced [{:keys [db]} _]
+    (if (:remote-storage-available db)
+      {:db (assoc db :remote-storage-uploading true)
+       ::effects/remote-storage-save {:files (->> (:essays db)
+                                                  vals
+                                                  (map (fn [{:keys [title] :as essay}]
+                                                         {:data essay
+                                                          :path (str title ".edn")})))
+                                      :on-complete ::remote-storage-save-complete}}
+      {:db db})))
+
+(rf/reg-event-db
+  ::remote-storage-save-complete
+  (fn-traced [db _]
+    (assoc db :remote-storage-uploading false)))
+
+(rf/reg-event-fx
+  ::remote-storage-retrieve-all-requested
+  (fn-traced [{:keys [db]} _]
+    (if (:remote-storage-available db)
+      {:db (assoc db :remote-storage-downloading true)
+       ::effects/remote-storage-retrieve-all {:on-complete ::remote-storage-retrieved}}
+      {:db db})))
+
+(rf/reg-event-fx
+  ::remote-storage-retrieve-requested
+  (fn-traced [{:keys [db]} [_ essay-id]]
+    (if (:remote-storage-available db)
+      (let [essay-title (get-in db [:essays essay-id :title])]
+        {:db (assoc db :remote-storage-downloading true)
+         ::effects/remote-storage-retrieve {:on-complete ::remote-storage-retrieved
+                                            :path (str essay-title ".edn")}})
+      {:db db})))
+
+(rf/reg-event-db
+  ::remote-storage-retrieved
+  [interceptors/persist-app-db]
+  (fn-traced [db [_ essays]]
+    (-> db
+        (assoc :remote-storage-downloading false)
+        (update :essays merge (->> essays
+                                   (map (juxt :id identity))
+                                   (into {}))))))
+
+(rf/reg-event-db
+  ::remote-storage-log-out
+  (fn-traced [db _]
+    (assoc db :remote-storage-available false)))

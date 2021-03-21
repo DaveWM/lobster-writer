@@ -65,6 +65,8 @@
            :align-items :stretch}]
   [:.dm-logo
    [:img {:max-height "20px"}]]
+  [:.remote-storage-logo
+   [:img {:max-height "20px"}]]
   (at-media
     {:max-width "720px"}
     [:#app-bar {:flex-direction "column"}

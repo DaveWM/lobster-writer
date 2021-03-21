@@ -17,6 +17,31 @@
   </head>
   <body>
     <div id="app"></div>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/remotestoragejs@2.0.0-alpha.7/release/remotestorage.js"></script>
+    <script type="text/javascript">
+    // hack to get around bug in RemoteStorage -> https://github.com/remotestorage/remotestorage.js/issues/1177
+
+      class LWRemoteStorage extends RemoteStorage {
+	    authorize(options) {
+            this.access.setStorageType(this.remote.storageApi);
+    if (typeof options.scope === 'undefined') {
+      options.scope = this.access.scopeParameter;
+    }
+
+    const location = window.RemoteStorage.Authorize.getLocation();
+    let redirectUri = location.origin;
+
+    options.redirectUri = redirectUri;
+
+    if (typeof options.clientId === 'undefined') {
+      options.clientId = options.redirectUri.match(/^(https?:\/\/[^/]+)/)[0];
+    }
+
+    window.RemoteStorage.Authorize.authorize(this, options);
+	}
+}
+    </script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/remotestorage-widget@1.5.2/build/widget.js"></script>
     <script src="/js/compiled/app.js"></script>
     <script>lobster_writer.core.init();</script>
     <!-- Fathom - simple website analytics - https://github.com/usefathom/fathom -->

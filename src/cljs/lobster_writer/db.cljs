@@ -6,4 +6,7 @@
    :essays {}
    :last-saved nil
    ::version 2
-   :alerts {}})
+   :alerts {}
+   :remote-storage-available false
+   :remote-storage-uploading false
+   :remote-storage-downloading false})

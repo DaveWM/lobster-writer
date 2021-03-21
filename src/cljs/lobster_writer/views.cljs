@@ -15,7 +15,8 @@
     [cljs-time.format :as tf]
     [cljs-time.coerce :as tc]
     [lobster-writer.components.file-chooser :refer [file-chooser]]
-    [clojure.string :as str]))
+    [clojure.string :as str]
+    [lobster-writer.remote-storage :as rs]))
 
 
 (def react-quill (r/adapt-react-class js/ReactQuill))
@@ -33,9 +34,27 @@
 ;; home
 
 (defn home []
-  (let [*all-essays (re-frame/subscribe [::subs/all-essays])]
+  (let [*all-essays (re-frame/subscribe [::subs/all-essays])
+        *rs-info (re-frame/subscribe [::subs/remote-storage])]
     [:div
+     (when (:available? @*rs-info)
+       [:<>
+        [:div.uk-margin
+         [:h4 "Remote Storage"]
+         [:div.uk-flex.uk-flex-start
+          [:button.uk-button.uk-button-default.uk-margin-right
+           {:on-click #(re-frame/dispatch [::events/remote-storage-save-all-requested])}
+           (if (:uploading? @*rs-info)
+             [:i.zmdi.zmdi-hc-spin.zmdi-replay]
+             "Upload All")]
+          [:button.uk-button.uk-button-default
+           {:on-click #(re-frame/dispatch [::events/remote-storage-retrieve-all-requested])}
+           (if (:downloading? @*rs-info)
+             [:i.zmdi.zmdi-hc-spin.zmdi-replay]
+             "Download All")]]]
+        [:hr]])
      [:div
+      [:h4 "Essays"]
       (->> @*all-essays
            (map val)
            (map (fn [essay]
@@ -395,13 +414,28 @@
 (defn essay-step []
   (let [share-dialog-open (r/atom false)
         encryption-key (r/atom nil)
-        sidebar-open (re-frame/subscribe [::subs/sidebar-open])]
+        sidebar-open (re-frame/subscribe [::subs/sidebar-open])
+        rs-info (re-frame/subscribe [::subs/remote-storage])]
     (fn [current-essay page page-component]
       [:div.uk-flex.uk-flex-column.essay
        [:div.uk-flex.uk-flex-row.uk-flex-between.uk-flex-middle.essay__header
         [:h3.uk-margin-remove
          (:title current-essay)]
         [:div.uk-flex
+         (when (:available? @rs-info)
+           [:<>
+            [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
+             {"uk-tooltip" "title: Upload to Remote Storage; pos: bottom"
+              :on-click #(re-frame/dispatch [::events/remote-storage-save-requested (:id current-essay)])}
+             (if (:uploading? @rs-info)
+               [:i.zmdi.zmdi-hc-spin.zmdi-replay]
+               [:i.zmdi.zmdi-cloud-upload])]
+            [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
+             {"uk-tooltip" "title: Download from Remote Storage; pos: bottom"
+              :on-click #(re-frame/dispatch [::events/remote-storage-retrieve-requested (:id current-essay)])}
+             (if (:downloading? @rs-info)
+               [:i.zmdi.zmdi-hc-spin.zmdi-replay]
+               [:i.zmdi.zmdi-cloud-download])]])
          [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
           {"uk-tooltip" "title: Download Essay; pos: bottom"
            :on-click #(re-frame/dispatch [::events/export-requested (:id current-essay)])}
@@ -488,6 +522,22 @@
           [:p "Essay not found!"]))
       [page-component])))
 
+(defn remote-storage-widget []
+  (reagent.core/create-class
+    {:component-did-mount (fn [this]
+                            (doto (js/window.Widget. rs/remote-storage (clj->js {:leaveOpen true
+                                                                                 :skipInitial true}))
+                              (.attach "test")))
+     :reagent-render (fn [] [:div#test])}))
+
+(defn remote-storage-modal []
+  [:div#remote-storage-modal {"uk-modal" "true"}
+   [:div.uk-modal-dialog.uk-modal-body
+    [:h3 "Connect to Remote Storage"]
+    [:p
+     "Connect to external storage (Google Drive, Dropbox, or remotestorage.io) to save your essays."]
+    [:a.uk-navbar-item
+     [remote-storage-widget]]]])
 
 (defn header []
   [:div#app-bar.uk-navbar-container.uk-light {"uk-navbar" ""}
@@ -497,6 +547,9 @@
    [:div.uk-navbar-right.app-bar__options
     [:a.uk-navbar-item {:href "/"} "Home"]
     [:a.uk-navbar-item {:href "/about"} "About"]
+    [:a.uk-navbar-item.remote-storage-logo
+     {"uk-toggle" "target: #remote-storage-modal"}
+     [:img {:src "/images/icons/remote-storage.svg"}]]
     [:a.uk-navbar-item
      {:style {:text-decoration "none"}
       :href "https://github.com/DaveWM/lobster-writer"
@@ -508,9 +561,10 @@
 
 (defn main-panel []
   (let [*active-page (re-frame/subscribe [::subs/active-page])
-        *alerts (re-frame/subscribe [::subs/alerts])]
+        *alerts (re-frame/subscribe [::subs/alerts])
+        *rs-info (re-frame/subscribe [::subs/remote-storage])]
     [:div
-     [header]
+     [header @*rs-info]
      [:div.uk-section
       [:div.uk-container
        [:div
@@ -521,5 +575,6 @@
                                :on-click #(re-frame/dispatch [::events/close-alert %])}]
            (:body alert)])]
        [pages @*active-page]]
+      [remote-storage-modal]
       [:div#saving-indicator
        [:i.zmdi.zmdi-hc-2x.zmdi-floppy]]]]))
