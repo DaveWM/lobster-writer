@@ -30,6 +30,9 @@
                                      ["clean"]
                                      ["code-block"]]})])
 
+(defn loading-spinner []
+  [:i.zmdi.zmdi-hc-spin.zmdi-hc-flip-horizontal.zmdi-replay])
+
 
 ;; home
 
@@ -45,12 +48,12 @@
           [:button.uk-button.uk-button-default.uk-margin-right
            {:on-click #(re-frame/dispatch [::events/remote-storage-save-all-requested])}
            (if (:uploading? @*rs-info)
-             [:i.zmdi.zmdi-hc-spin.zmdi-replay]
+             [loading-spinner]
              "Upload All")]
           [:button.uk-button.uk-button-default
            {:on-click #(re-frame/dispatch [::events/remote-storage-retrieve-all-requested])}
            (if (:downloading? @*rs-info)
-             [:i.zmdi.zmdi-hc-spin.zmdi-replay]
+             [loading-spinner]
              "Download All")]]]
         [:hr]])
      [:div
@@ -428,13 +431,13 @@
              {"uk-tooltip" "title: Upload to Remote Storage; pos: bottom"
               :on-click #(re-frame/dispatch [::events/remote-storage-save-requested (:id current-essay)])}
              (if (:uploading? @rs-info)
-               [:i.zmdi.zmdi-hc-spin.zmdi-replay]
+               [loading-spinner]
                [:i.zmdi.zmdi-cloud-upload])]
             [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
              {"uk-tooltip" "title: Download from Remote Storage; pos: bottom"
               :on-click #(re-frame/dispatch [::events/remote-storage-retrieve-requested (:id current-essay)])}
              (if (:downloading? @rs-info)
-               [:i.zmdi.zmdi-hc-spin.zmdi-replay]
+               [loading-spinner]
                [:i.zmdi.zmdi-cloud-download])]])
          [:button.uk-button.uk-button-default.uk-button-small.uk-border-rounded
           {"uk-tooltip" "title: Download Essay; pos: bottom"
@@ -525,8 +528,8 @@
 (defn remote-storage-widget []
   (reagent.core/create-class
     {:component-did-mount (fn [this]
-                            (doto (js/window.Widget. rs/remote-storage (clj->js {:leaveOpen true
-                                                                                 :skipInitial true}))
+                            (doto (js/Widget. rs/remote-storage (clj->js {:leaveOpen true
+                                                                          :skipInitial true}))
                               (.attach "test")))
      :reagent-render (fn [] [:div#test])}))
 

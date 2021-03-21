@@ -40,6 +40,7 @@
     window.RemoteStorage.Authorize.authorize(this, options);
 	}
 }
+window["LWRemoteStorage"] = LWRemoteStorage;
     </script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/remotestorage-widget@1.5.2/build/widget.js"></script>
     <script src="/js/compiled/app.js"></script>
@@ -63,7 +64,7 @@
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.5.4/dist/js/uikit-icons.min.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
+        navigator.serviceWorker.register('/service-worker.js');
       }
     </script>
   </body>

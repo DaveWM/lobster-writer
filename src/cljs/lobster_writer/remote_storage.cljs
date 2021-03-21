@@ -24,8 +24,8 @@
 
 (defn init-remote-storage! [on-connected on-disconnected]
   (-> remote-storage
-      (.setApiKeys (clj->js {:dropbox "m43cbo3wkoiuhl4"
-                             :googledrive "361048255604-033g8c6ves7onapah838qsfe2vdips13.apps.googleusercontent.com"})))
+      (.setApiKeys (clj->js {"dropbox" "m43cbo3wkoiuhl4"
+                             "googledrive" "361048255604-033g8c6ves7onapah838qsfe2vdips13.apps.googleusercontent.com"})))
   (-> remote-storage
       (.-access)
       (.claim "lobster-writer" "rw"))
