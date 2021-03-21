@@ -31,7 +31,8 @@
                                      ["code-block"]]})])
 
 (defn loading-spinner []
-  [:i.zmdi.zmdi-hc-spin.zmdi-hc-flip-horizontal.zmdi-replay])
+  [:div.flipped
+   [:i.zmdi.zmdi-hc-spin-reverse.zmdi-replay]])
 
 
 ;; home
