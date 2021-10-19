@@ -11,7 +11,7 @@
      :children [[:ul.list-group {:style {:max-width "500px"}}
                  (->> items
                       (map-indexed (fn [idx item]
-                                     ^{:key item}
+                                     ^{:key (str idx (random-uuid))}
                                      [:li.list-group-item.list-group-item-active
                                       [rc/h-box
                                        :justify :between
