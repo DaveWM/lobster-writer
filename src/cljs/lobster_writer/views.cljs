@@ -157,7 +157,8 @@
               [:ul.list-group {:style {:max-width "500px"}}
                (->> (:candidate-topics current-essay)
                     (map #(-> [:a.list-group-item.list-group-item-active
-                               {:href "#"
+                               {:key %
+                                :href "#"
                                 :class (when (= % (:title current-essay)) "active")
                                 :on-click (partial re-frame/dispatch [::events/topic-selected %])}
                                %])))]
