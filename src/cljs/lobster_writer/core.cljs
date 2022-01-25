@@ -23,7 +23,7 @@
   (routes/start-routing!)
   (re-frame/dispatch-sync [::events/initialize-db])
   (dev-setup)
-  (mount-root)
   (rs/init-remote-storage!
-    #(re-frame/dispatch [:lobster-writer.events/remote-storage-available])
-    #(re-frame/dispatch [::events/remote-storage-log-out])))
+   #(re-frame/dispatch [:lobster-writer.events/remote-storage-available])
+   #(re-frame/dispatch [::events/remote-storage-log-out]))
+  (mount-root))

@@ -531,8 +531,8 @@
     {:component-did-mount (fn [this]
                             (doto (js/Widget. rs/remote-storage (clj->js {:leaveOpen true
                                                                           :skipInitial true}))
-                              (.attach "test")))
-     :reagent-render (fn [] [:div#test])}))
+                              (.attach "rs")))
+     :reagent-render (fn [] [:div#rs])}))
 
 (defn remote-storage-modal []
   [:div#remote-storage-modal {"uk-modal" "true"}
