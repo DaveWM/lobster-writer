@@ -95,4 +95,7 @@
                  :flex-wrap :nowrap}]]
   [:.outline-paragraphs {}
    [:&__explanation {:margin "0 0 15px 0"}]]
-  [:.flipped {:transform "scaleX(-1)"}])
+  [:.flipped {:transform "scaleX(-1)"}]
+  [:.play-badge
+   {:display   :block
+    :max-width "300px"}])

@@ -93,6 +93,9 @@
    [:p "Lobster Writer is an application to help you write essays. It is based on the advice of Dr. Jordan Peterson in "
     [:a {:href "/Jordan-Peterson-Writing-Template.docx" :target "_blank"} "this essay writing guide"]
     ". According to Dr. Peterson, this method will help you \"to write an excellent essay from beginning to end\". "]
+   [:p "Lobster Writer is also available as an Android app:"
+    [:a.play-badge {:href "https://play.google.com/store/apps/details?id=uk.co.lobster_writer.twa&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1"}
+     [:img {:alt "Get it on Google Play" :src "https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"}]]]
    [:p
     "Lobster Writer is free (both gratis and libre) software - you can find the souce code "
     [:a {:href "https://github.com/DaveWM/lobster-writer"} "here"]
